@@ -1,0 +1,255 @@
+---
+title: "Project Quote & Scope of Services"
+subtitle: "Statistical Consultation for Undergraduate Thesis"
+format:
+  typst:
+    toc: false
+    number-sections: false
+    columns: 1
+    margin:
+      x: 25mm
+      y: 25mm
+include-in-header:
+  text: |
+    #let horizontalrule = [
+      #block(above: 1em, below: 1em)[
+        #line(length: 100%, stroke: 1.5pt + rgb("#ff8277"))
+      ]
+    ]
+include-before-body:
+  text: |
+    #let teal = rgb("#00B4D8")
+    #let coral = rgb("#ff8277")
+    #set text(font: "Arial", size: 11pt)
+    #set par(leading: 0.8em)
+    #show heading.where(level: 2): it => {
+      set text(fill: teal, weight: "bold", size: 14pt)
+      block(above: 1.5em, below: 0.8em)[#it.body]
+    }
+    #show heading.where(level: 3): it => {
+      set text(fill: coral, weight: "bold", size: 12pt)
+      block(above: 1.2em, below: 0.6em)[#it.body]
+    }
+    #set table(
+      stroke: (x, y) => if y == 0 { (bottom: 1.5pt + coral) } else { (bottom: 0.5pt + rgb("#e0e0e0")) },
+      fill: (x, y) => if y == 0 { rgb("#fff5f4") },
+      inset: 8pt,
+    )
+    #show table.cell.where(y: 0): set text(weight: "bold", fill: rgb("#1a1a1a"))
+    #show quote: it => {
+      block(
+        width: 100%,
+        fill: rgb("#f0fbfc"),
+        inset: 12pt,
+        radius: 4pt,
+        stroke: (left: 3pt + teal),
+      )[#it.body]
+    }
+    #show link: it => {
+      set text(fill: teal)
+      underline(it)
+    }
+---
+
+**Prepared for:** Patricia Pao and Group
+
+**Prepared by:** John Vincent Landingin
+
+**Date:** December 2025
+
+------------------------------------------------------------------------
+
+## Project Overview
+
+### Research Title
+
+"Building a Healthier and Smarter Economy Through Taxation: Examining the Relationship Between Tax Mix and Health and Education Outcomes in the Asia-Pacific Region"
+
+### Client Details
+
+-   **Students:** 3 BS Accountancy students
+-   **Institution:** De La Salle University
+-   **Research Scope:** 29 Asia-Pacific countries, 10-year panel data (2014-2023)
+
+------------------------------------------------------------------------
+
+## Scope of Services
+
+### Phase 1: Data Preparation & Validation
+
+| Deliverable | Description |
+|------------------------------------|------------------------------------|
+| Data Audit | Review compiled secondary data from OECD, World Bank, IMF, SDG Index Portal |
+| Variable Construction | Construct tax mix ratios and SDG composite indices |
+| Data Cleaning | Handle missing values, outliers, and inconsistencies |
+| PCA Implementation | Create composite indices for SDG 3 (Health) and SDG 4 (Education) |
+
+### Phase 2: Diagnostic Testing
+
+| Test               | Purpose                                         |
+|--------------------|-------------------------------------------------|
+| VIF Analysis       | Multicollinearity detection                     |
+| Breusch-Pagan Test | Heteroskedasticity testing                      |
+| Wooldridge Test    | Serial correlation in panel data                |
+| Pesaran CD Test    | Cross-sectional dependence                      |
+| Unit Root Tests    | Stationarity verification (Maddala-Wu, Pesaran) |
+
+### Phase 3: Model Selection & Estimation
+
+| Deliverable | Description |
+|------------------------------------|------------------------------------|
+| Model Selection Tests | Breusch-Pagan LM, Hausman, Chow/F-Test |
+| Panel Regression | Fixed Effects and/or Random Effects estimation |
+| Moderation Analysis | Interaction effects with Population, GDP per capita, Debt-to-GDP |
+| Robustness Checks | Sensitivity analysis and alternative specifications |
+
+### Phase 4: Results Interpretation & Documentation
+
+| Deliverable | Description |
+|------------------------------------|------------------------------------|
+| Output Interpretation | Explain coefficient estimates, significance levels, model fit |
+| Tables & Figures | Publication-ready statistical tables |
+| Methodology Guidance | Support for writing the statistical methodology chapter |
+| Results Guidance | Support for writing the results and discussion chapter |
+
+------------------------------------------------------------------------
+
+## Service Packages
+
+> **Note on Pricing:** All rates listed below are negotiable. After reviewing your thesis proposal, I adjusted my initial estimate (PHP 4,000-6,000) to reflect the complexity of the methodology involved: panel data regression, PCA, moderation analysis, and extensive diagnostic testing. However, we can discuss and tailor the pricing based on which specific areas you need help with.
+
+> **Why This Project Costs More Than Typical Thesis Help:** Most undergraduate thesis consultations involve straightforward analyses (surveys, basic regression). Your research requires advanced econometric methods (panel data regression, PCA, moderation analysis) plus handling potential assumption violations (heteroskedasticity, serial correlation, cross-sectional dependence). When diagnostic tests reveal problems, the analysis doesn't stop. It requires applying corrections like robust standard errors, Driscoll-Kraay adjustments, or model re-specification. The expertise needed to diagnose and correct these issues is what drives the cost.
+
+### Option A: Consultation Only
+
+**Rate:** PHP 500 per hour
+
+**Includes:**
+
+-   Q&A sessions via video call or messaging
+-   Methodology guidance and troubleshooting
+-   Review of your statistical output
+-   Recommendations for improvement
+
+**Best for:** Students who want to do the analysis themselves but need expert guidance along the way.
+
+------------------------------------------------------------------------
+
+### Option B: Partial Statistical Assistance
+
+**Rate:** PHP 5,000 - 7,000 (depending on scope)
+
+**Choose the areas you need help with:**
+
+-   PCA for composite index construction
+-   Panel data regression (Fixed Effects / Random Effects)
+-   Diagnostic tests only (VIF, Breusch-Pagan, Wooldridge, Pesaran CD, Unit Root)
+-   Model selection tests only (BP-LM, Hausman, Chow)
+-   Moderation analysis with interaction terms
+-   Results interpretation for specific outputs
+
+**Best for:** Students who can handle some parts themselves but need professional help on specific, challenging areas.
+
+------------------------------------------------------------------------
+
+### Option C: Full Statistical Analysis Package
+
+**Rate:** PHP 10,000 (fixed)
+
+**Includes:**
+
+-   All diagnostic tests (VIF, Breusch-Pagan, Wooldridge, Pesaran CD, Unit Root)
+-   Model selection tests (BP-LM, Hausman, Chow)
+-   Panel data regression (Fixed Effects / Random Effects)
+-   PCA for composite index construction
+-   Moderation analysis with interaction terms
+-   Statistical output files and interpretation notes
+
+**Best for:** Students who need the core statistical analysis done professionally.
+
+------------------------------------------------------------------------
+
+### Option D: Comprehensive Support
+
+**Rate:** PHP 15,000 (fixed)
+
+**Includes:**
+
+-   Everything in Option C, plus:
+-   Data cleaning and preparation
+-   Multiple model specifications and robustness checks
+-   Publication-ready tables and figures
+-   Detailed methodology write-up guidance
+-   Results interpretation write-up guidance
+-   Up to 5 revision rounds
+-   Priority response (within 24 hours)
+
+**Best for:** Students who want end-to-end statistical support from data preparation to final results.
+
+------------------------------------------------------------------------
+
+## Timeline
+
+| Phase                                  | Estimated Duration    |
+|----------------------------------------|-----------------------|
+| Data Preparation & Validation          | 2-3 days              |
+| Diagnostic Testing                     | 1-2 days              |
+| Model Selection & Estimation           | 2-3 days              |
+| Results Interpretation & Documentation | 2-3 days              |
+| **Total (Comprehensive)**              | **7-11 working days** |
+
+*Note: Timeline depends on data quality and revision requirements.*
+
+------------------------------------------------------------------------
+
+## Payment Terms
+
+-   **Consultation (Option A):** Payment after each session
+-   **Fixed Packages (B, C, D):** 50% downpayment to start, 50% upon delivery
+-   **Payment Methods:** GCash, Maya, Bank Transfer (BDO/BPI)
+
+------------------------------------------------------------------------
+
+## What's Not Included
+
+-   Primary data collection
+-   Writing the thesis chapters (guidance only, not ghostwriting)
+-   Plagiarism checking
+-   Oral defense coaching (available as add-on)
+
+------------------------------------------------------------------------
+
+## Add-On Services
+
+| Service                               | Rate                 |
+|---------------------------------------|----------------------|
+| Oral Defense Preparation              | PHP 2,000 - 3,000    |
+| Additional Revision Rounds (beyond 5) | PHP 500 per round    |
+| Rush Delivery (50% faster)            | +30% of package rate |
+
+------------------------------------------------------------------------
+
+## Next Steps
+
+1.  Review this quote and select your preferred package
+2.  Provide your compiled dataset for initial assessment
+3.  Schedule a brief call to discuss project details
+4.  Confirm engagement and submit downpayment
+
+------------------------------------------------------------------------
+
+## Contact
+
+**John Vincent Landingin**
+
+Email: johnvincentland\@gmail.com
+
+Phone: +639271379854
+
+LinkedIn: linkedin.com/in/jvlandingin
+
+**Learn more about my background:** [Consultant Profile](https://docs.google.com/document/d/1VxUXX8NYWjQwvhmDwg88fmfpiiEuM-CJF2USt-QlwGU/edit?tab=t.0#heading=h.wadpbmpu7cyj)
+
+------------------------------------------------------------------------
+
+*This quote is valid for 30 days from the date of issue.*
