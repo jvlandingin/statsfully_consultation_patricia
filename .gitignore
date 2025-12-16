@@ -2,3 +2,9 @@
 *.json
 *.png
 *.html
+*.Rproj.user
+*.Rproj
+*_cache*
+archive
+.gitignore
+.Rhistory
