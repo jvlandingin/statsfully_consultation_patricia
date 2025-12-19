@@ -89,4 +89,94 @@ coverage_pattern <- tax_structure_and_sdg |>
     year_type = if_else(year %% 2 == 0, "Even", "Odd")
   )
 
+
+# Analyze missingness ----------------------------------------------------
+
+tax_structure_and_sdg |>
+  select(country, year, sdg4_lower_secondary) |>
+  mutate(is_missing = is.na(sdg4_lower_secondary)) |>
+  ggplot(aes(x = year, y = country, fill = is_missing)) +
+  geom_tile(color = "white", linewidth = 0.5) +
+  scale_fill_manual(
+    values = c("FALSE" = "#91cf60", "TRUE" = "#d73027"),
+    labels = c("Present", "Missing"),
+    name = NULL
+  ) +
+  scale_x_continuous(breaks = 2014:2023) +
+  labs(
+    title = "Missingness Pattern: sdg4_lower_secondary",
+    x = "Year",
+    y = "Country"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = 7),
+    legend.position = "bottom"
+  )
+
+# Research solution to missingness problem -------------------------------
+
 # PCA --------------------------------------------------------------------
+
+sdg3_fields <- tax_structure_and_sdg |>
+  # select(
+  #   # contains("sdg3_"),
+  #   # sdg3_under_5_mortality_rate,
+  #   # sdg3_neonatal_mortality_rate,
+  #   # sdg3_maternal_mortality_ratio
+  # ) |>
+  na.omit()
+
+pca_sdg3 <- prcomp(sdg3_fields, scale. = TRUE)
+
+summary(pca_sdg3)
+
+sdg3_complete$sdg3_index <- pca_result$x[, "PC1"]
+
+# Run PCA on mortality indicators
+sdg3_mortality <- tax_structure_and_sdg |>
+  select(
+    country,
+    year,
+    sdg3_under_5_mortality_rate,
+    sdg3_neonatal_mortality_rate,
+    sdg3_maternal_mortality_ratio
+  )
+
+# Get complete cases with identifiers
+sdg3_complete <- sdg3_mortality |> na.omit()
+
+# PCA on just the numeric columns
+pca_result <- prcomp(
+  sdg3_complete |> select(-country, -year),
+  scale. = TRUE
+)
+
+# Extract PC1 scores and attach back to country-year
+sdg3_complete$sdg3_index <- pca_result$x[, "PC1"]
+
+
+tax_structure_and_sdg |>
+  select(
+    matches("^sdg")
+  ) |>
+  select(
+    sdg3_under_5_mortality_rate,
+    sdg3_neonatal_mortality_rate,
+    sdg3_maternal_mortality_ratio,
+    sdg4_lower_secondary
+  ) |>
+  na.omit()
+
+tax_structure_and_sdg |>
+  select(
+    matches("^sdg3_"),
+    matches("^sdg4_")
+  ) |>
+  na.omit()
+
+# install.packages("openxlsx2")
+openxlsx2::write_xlsx(
+  tax_structure_and_sdg,
+  file = "data/tax_structure_and_sdg.xlsx"
+)

@@ -14,7 +14,7 @@ format:
     fig-width: 10
     fig-height: 6
 execute:
-  cache: true
+  cache: false
   warning: false
   message: false
 ---
@@ -245,7 +245,7 @@ miss_by_year |>
   ggplot(aes(x = year, y = pct_missing, color = variable)) +
   geom_line(linewidth = 1, alpha = 0.7) +
   geom_point(size = 2) +
-  facet_wrap(~group, scales = "free_y", ncol = 2) +
+  facet_wrap(~group, scales = "fixed", ncol = 2) +
   scale_x_continuous(breaks = seq(2014, 2023, 2)) +
   labs(
     title = "Missingness Trends by Variable Group",
@@ -576,9 +576,9 @@ recommendations |>
 2.  **SDG3 Composite:** Use 3 mortality indicators only (sdg3_under_5, sdg3_neonatal, sdg3_maternal)
 3.  **Tax Variables:** `tax_goods_and_services`, `tax_income_and_profits`
 4.  **Moderating Variables:**
-    - `mod_gdp_per_capita` (13.8% missing) - usable
-    - `mod_macroeconomic_population` (20.7% missing) - use with caution
-    - `mod_debt_to_gpt_ratio` (51.7% missing) - **problematic, consider dropping or imputation**
+    -   `mod_gdp_per_capita` (13.8% missing) - usable
+    -   `mod_macroeconomic_population` (20.7% missing) - use with caution
+    -   `mod_debt_to_gpt_ratio` (51.7% missing) - **problematic, consider dropping or imputation**
 5.  **Missing Data:** Complete case analysis on selected variables
 6.  **Sensitivity:** Consider linear interpolation for population; debt-to-GDP may require alternative data source
 :::
