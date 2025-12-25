@@ -54,8 +54,18 @@ list(
   tar_target(
     sdg_4_education,
     c(
+      "sdg4_prop_students_proficient_math",
+      "sdg4_prop_students_proficient_reading",
+      "sdg4_prop_primary_secondary",
+      "sdg4_lower_secondary",
+      "sdg4_upper_secondary",
       "sdg4_adult_literacy_rate",
-      "sdg4_lower_secondary"
+      "sdg4_prop_trained_teachers_pre_primary",
+      "sdg4_prop_trained_teachers_primary",
+      "sdg4_prop_trained_teachers_lower_secondary",
+      "sdg4_prop_trained_teachers_upper_secondary",
+      "sdg4_prop_trained_teachers_secondary",
+      "sdg4_gender_gap_in_completion"
     )
   ),
 
@@ -79,53 +89,103 @@ list(
   ),
 
   tar_target(
-    under_5_mortality_rate_raw,
-    extract_googlesheet_data(analysis_data_url, "B99:L129")
+    sdg3_under_5_mortality_rate_raw,
+    extract_googlesheet_data(analysis_data_url, "B101:L131")
   ),
 
   tar_target(
-    neonatal_mortality_rate_raw,
-    extract_googlesheet_data(analysis_data_url, "B131:L161")
+    sdg3_neonatal_mortality_rate_raw,
+    extract_googlesheet_data(analysis_data_url, "B133:L163")
   ),
 
   tar_target(
-    maternal_mortality_ratio_raw,
-    extract_googlesheet_data(analysis_data_url, "B163:L193")
+    sdg3_maternal_mortality_ratio_raw,
+    extract_googlesheet_data(analysis_data_url, "B165:L195")
   ),
 
   tar_target(
-    prop_births_with_skilled_personnel_raw,
-    extract_googlesheet_data(analysis_data_url, "B195:L225")
+    sdg3_prop_births_with_skilled_personnel_raw,
+    extract_googlesheet_data(analysis_data_url, "B197:L227")
   ),
 
   tar_target(
-    coverage_of_essential_health_services_raw,
-    extract_googlesheet_data(analysis_data_url, "B227:L257")
+    sdg3_coverage_of_essential_health_services_raw,
+    extract_googlesheet_data(analysis_data_url, "B229:L259")
   ),
 
   tar_target(
-    lower_secondary_raw,
-    extract_googlesheet_data(analysis_data_url, "B291:L321")
+    sdg4_prop_students_proficient_math_raw,
+    extract_googlesheet_data(analysis_data_url, "B263:L293")
   ),
 
   tar_target(
-    adult_literacy_rate_raw,
-    extract_googlesheet_data(analysis_data_url, "B323:L353")
+    sdg4_prop_students_proficient_reading_raw,
+    extract_googlesheet_data(analysis_data_url, "B295:L325")
   ),
 
   tar_target(
-    macroeconomic_population_raw,
-    extract_googlesheet_data(analysis_data_url, "B451:L481")
+    sdg4_prop_primary_secondary_raw,
+    extract_googlesheet_data(analysis_data_url, "B327:L357")
+  ),
+
+  tar_target(
+    sdg4_lower_secondary_raw,
+    extract_googlesheet_data(analysis_data_url, "B359:L389")
+  ),
+
+  tar_target(
+    sdg4_upper_secondary_raw,
+    extract_googlesheet_data(analysis_data_url, "B391:L421")
+  ),
+
+  tar_target(
+    sdg4_adult_literacy_rate_raw,
+    extract_googlesheet_data(analysis_data_url, "B424:L454")
+  ),
+
+  tar_target(
+    sdg4_prop_trained_teachers_pre_primary_raw,
+    extract_googlesheet_data(analysis_data_url, "B456:L486")
+  ),
+
+  tar_target(
+    sdg4_prop_trained_teachers_primary_raw,
+    extract_googlesheet_data(analysis_data_url, "B489:L519")
+  ),
+
+  tar_target(
+    sdg4_prop_trained_teachers_lower_secondary_raw,
+    extract_googlesheet_data(analysis_data_url, "B520:L550")
+  ),
+
+  tar_target(
+    sdg4_prop_trained_teachers_upper_secondary_raw,
+    extract_googlesheet_data(analysis_data_url, "B552:L582")
+  ),
+
+  tar_target(
+    sdg4_prop_trained_teachers_secondary_raw,
+    extract_googlesheet_data(analysis_data_url, "B584:L614")
+  ),
+
+  tar_target(
+    sdg4_gender_gap_in_completion_raw,
+    extract_googlesheet_data(analysis_data_url, "B616:L646")
+  ),
+
+  tar_target(
+    mod_macroeconomic_population_raw,
+    extract_googlesheet_data(analysis_data_url, "B683:L713")
   ),
 
   tar_target(
     mod_gdp_per_capita_raw,
-    extract_googlesheet_data(analysis_data_url, "B419:L449")
+    extract_googlesheet_data(analysis_data_url, "B651:L681")
   ),
 
   tar_target(
     mod_debt_to_gpt_ratio_raw,
-    extract_googlesheet_data(analysis_data_url, "B483:L513")
+    extract_googlesheet_data(analysis_data_url, "B715:L745")
   ),
 
   # ============================================================================
@@ -159,7 +219,7 @@ list(
   tar_target(
     sdg3_under_5_mortality_rate_tidy,
     tidy_googlesheet_extract(
-      under_5_mortality_rate_raw,
+      sdg3_under_5_mortality_rate_raw,
       "sdg3_under_5_mortality_rate"
     )
   ),
@@ -167,7 +227,7 @@ list(
   tar_target(
     sdg3_neonatal_mortality_rate_tidy,
     tidy_googlesheet_extract(
-      neonatal_mortality_rate_raw,
+      sdg3_neonatal_mortality_rate_raw,
       "sdg3_neonatal_mortality_rate"
     )
   ),
@@ -175,7 +235,7 @@ list(
   tar_target(
     sdg3_maternal_mortality_ratio_tidy,
     tidy_googlesheet_extract(
-      maternal_mortality_ratio_raw,
+      sdg3_maternal_mortality_ratio_raw,
       "sdg3_maternal_mortality_ratio"
     )
   ),
@@ -183,7 +243,7 @@ list(
   tar_target(
     sdg3_prop_births_with_skilled_personnel_tidy,
     tidy_googlesheet_extract(
-      prop_births_with_skilled_personnel_raw,
+      sdg3_prop_births_with_skilled_personnel_raw,
       "sdg3_prop_births_with_skilled_personnel"
     )
   ),
@@ -191,20 +251,20 @@ list(
   tar_target(
     sdg3_coverage_of_essential_health_services_tidy,
     tidy_googlesheet_extract(
-      coverage_of_essential_health_services_raw,
+      sdg3_coverage_of_essential_health_services_raw,
       "sdg3_coverage_of_essential_health_services"
     )
   ),
 
   tar_target(
     sdg4_lower_secondary_tidy,
-    tidy_googlesheet_extract(lower_secondary_raw, "sdg4_lower_secondary")
+    tidy_googlesheet_extract(sdg4_lower_secondary_raw, "sdg4_lower_secondary")
   ),
 
   tar_target(
     sdg4_adult_literacy_rate_tidy,
     tidy_googlesheet_extract(
-      adult_literacy_rate_raw,
+      sdg4_adult_literacy_rate_raw,
       "sdg4_adult_literacy_rate"
     )
   ),
@@ -212,7 +272,7 @@ list(
   tar_target(
     mod_macroeconomic_population_tidy,
     tidy_googlesheet_extract(
-      macroeconomic_population_raw,
+      mod_macroeconomic_population_raw,
       "mod_macroeconomic_population"
     )
   ),

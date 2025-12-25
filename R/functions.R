@@ -92,12 +92,12 @@ tidy_googlesheet_extract <- function(googlesheet_extract, field_name) {
       columns = dplyr::all_of(field_name),
       actions = pointblank::action_levels(warn_at = 0.80)
     ) |>
-    pointblank::col_vals_in_set(
+    pointblank::col_vals_make_set(
       columns = "country",
       set = all_countries,
       actions = pointblank::warn_on_fail(warn_at = 1)
     ) |>
-    pointblank::col_vals_in_set(
+    pointblank::col_vals_make_set(
       columns = "year",
       set = seq(2014, 2023),
       actions = pointblank::warn_on_fail(warn_at = 1)
@@ -136,38 +136,16 @@ full_join_one_to_one_no_na <- function(x, y) {
 
 #' Integrate all tidy datasets into one panel
 #'
-#' @param ... Named list of tidy data frames to join
+#' @param ... Tidy data frames to join (arbitrary number)
 #' @return Integrated panel data frame
-integrate_panel_data <- function(
-  tax_goods_and_services_tidy,
-  tax_general_consumption_tidy,
-  tax_income_and_profits_tidy,
-  sdg3_under_5_mortality_rate_tidy,
-  sdg3_neonatal_mortality_rate_tidy,
-  sdg3_maternal_mortality_ratio_tidy,
-  sdg3_prop_births_with_skilled_personnel_tidy,
-  sdg3_coverage_of_essential_health_services_tidy,
-  sdg4_lower_secondary_tidy,
-  sdg4_adult_literacy_rate_tidy,
-  mod_macroeconomic_population_tidy,
-  mod_gdp_per_capita_tidy,
-  mod_debt_to_gpt_ratio_tidy
-) {
-  tax_goods_and_services_tidy |>
-    full_join_one_to_one_no_na(tax_general_consumption_tidy) |>
-    full_join_one_to_one_no_na(tax_income_and_profits_tidy) |>
-    full_join_one_to_one_no_na(sdg3_under_5_mortality_rate_tidy) |>
-    full_join_one_to_one_no_na(sdg3_neonatal_mortality_rate_tidy) |>
-    full_join_one_to_one_no_na(sdg3_maternal_mortality_ratio_tidy) |>
-    full_join_one_to_one_no_na(sdg3_prop_births_with_skilled_personnel_tidy) |>
-    full_join_one_to_one_no_na(
-      sdg3_coverage_of_essential_health_services_tidy
-    ) |>
-    full_join_one_to_one_no_na(sdg4_lower_secondary_tidy) |>
-    full_join_one_to_one_no_na(sdg4_adult_literacy_rate_tidy) |>
-    full_join_one_to_one_no_na(mod_macroeconomic_population_tidy) |>
-    full_join_one_to_one_no_na(mod_gdp_per_capita_tidy) |>
-    full_join_one_to_one_no_na(mod_debt_to_gpt_ratio_tidy)
+integrate_panel_data <- function(...) {
+  datasets <- list(...)
+
+  # Use Reduce to sequentially join all datasets
+  Reduce(
+    f = full_join_one_to_one_no_na,
+    x = datasets
+  )
 }
 
 #' Calculate missingness per year
