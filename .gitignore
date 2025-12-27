@@ -8,3 +8,9 @@
 archive
 .gitignore
 .Rhistory
+
+*.xlsx
+*.csv
+
+
+_targets/meta/meta

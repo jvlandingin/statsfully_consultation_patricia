@@ -35,14 +35,16 @@ library(tibble)
 
 # Load data from targets
 tar_load(tax_structure_and_sdg)
-tar_load(sdg_3_health)
-tar_load(sdg_4_education)
 
 # Define variable groups based on naming convention
 tax_vars <- c("tax_goods_and_services", "tax_general_consumption", "tax_income_and_profits")
 sdg3_vars <- names(tax_structure_and_sdg)[grepl("^sdg3_", names(tax_structure_and_sdg))]
 sdg4_vars <- names(tax_structure_and_sdg)[grepl("^sdg4_", names(tax_structure_and_sdg))]
 mod_vars <- names(tax_structure_and_sdg)[grepl("^mod_", names(tax_structure_and_sdg))]
+
+# Key variable subsets
+mortality_vars <- c("sdg3_under_5_mortality_rate", "sdg3_neonatal_mortality_rate", "sdg3_maternal_mortality_ratio")
+tax_vars_analysis <- c("tax_goods_and_services", "tax_income_and_profits")
 ```
 
 ## Executive Summary
@@ -50,11 +52,21 @@ mod_vars <- names(tax_structure_and_sdg)[grepl("^mod_", names(tax_structure_and_
 This report analyzes missingness patterns in the panel dataset examining tax structure composition and SDG outcomes across 29 Asia-Pacific countries (2014-2023). Understanding missingness is critical for determining appropriate analytical strategies and ensuring valid statistical inference.
 
 ::: callout-important
-## Key Findings
+## Critical Findings
 
--   **Critical missingness (\>50%):** `sdg3_coverage_of_essential_health_services`, `sdg4_adult_literacy_rate`, `sdg3_prop_births_with_skilled_personnel`
--   **Structural missingness:** `sdg3_coverage_of_essential_health_services` appears to be collected biennially
--   **Recommended analysis variables:** 3 mortality indicators + tax variables (2015-2022)
+**SDG 4 Education Analysis is NOT FEASIBLE as Originally Planned**
+
+- **10 out of 12 SDG4 variables have >50% missing data** (too sparse for analysis)
+- **Student proficiency scores: 87-93% missing** (standardized testing not widespread)
+- **Teacher quality metrics: All >50% missing** (cannot create composite index)
+- **Only 1 borderline variable**: `sdg4_lower_secondary` (33% missing)
+
+**SDG 3 Health Analysis is ROBUST**
+
+- **3 mortality indicators: 7-16% missing** (excellent for PCA composite)
+- **2 coverage indicators: 59-64% missing** (must drop)
+
+**Recommended Focus**: Tax structure → SDG3 Health outcomes (original SDG4 analysis severely limited)
 :::
 
 ## 1. Dataset Overview
@@ -83,17 +95,31 @@ tibble(
 tibble(
   Group = c("Tax Structure", "SDG 3 (Health)", "SDG 4 (Education)", "Moderating Variables"),
   Prefix = c("tax_*", "sdg3_*", "sdg4_*", "mod_*"),
-  Variables = c(
-    paste(tax_vars, collapse = ", "),
-    paste(sdg3_vars, collapse = ", "),
-    paste(sdg4_vars, collapse = ", "),
-    paste(mod_vars, collapse = ", ")
+  Count = c(length(tax_vars), length(sdg3_vars), length(sdg4_vars), length(mod_vars)),
+  `Viable (< 30%)` = c(
+    sum(sapply(tax_structure_and_sdg[tax_vars], function(x) mean(is.na(x)) < 0.30)),
+    sum(sapply(tax_structure_and_sdg[sdg3_vars], function(x) mean(is.na(x)) < 0.30)),
+    sum(sapply(tax_structure_and_sdg[sdg4_vars], function(x) mean(is.na(x)) < 0.30)),
+    sum(sapply(tax_structure_and_sdg[mod_vars], function(x) mean(is.na(x)) < 0.30))
   ),
-  Count = c(length(tax_vars), length(sdg3_vars), length(sdg4_vars), length(mod_vars))
+  `Critical (≥ 50%)` = c(
+    sum(sapply(tax_structure_and_sdg[tax_vars], function(x) mean(is.na(x)) >= 0.50)),
+    sum(sapply(tax_structure_and_sdg[sdg3_vars], function(x) mean(is.na(x)) >= 0.50)),
+    sum(sapply(tax_structure_and_sdg[sdg4_vars], function(x) mean(is.na(x)) >= 0.50)),
+    sum(sapply(tax_structure_and_sdg[mod_vars], function(x) mean(is.na(x)) >= 0.50))
+  )
 ) |>
-  kable(caption = "Variable Groups by Prefix") |>
-  kable_styling(bootstrap_options = c("striped", "hover"))
+  kable(caption = "Variable Groups Summary") |>
+  kable_styling(bootstrap_options = c("striped", "hover")) |>
+  column_spec(4, background = "#d4edda") |>  # Green for viable
+  column_spec(5, background = "#f8d7da")     # Red for critical
 ```
+
+::: callout-warning
+## Data Quality Alert
+
+**SDG 4 Education**: 10 out of 12 variables (83%) are critically sparse (≥50% missing). This severely limits the feasibility of comprehensive education outcome analysis.
+:::
 
 ### Countries Included
 
@@ -150,13 +176,14 @@ overall_miss <- tax_structure_and_sdg |>
 overall_miss |>
   select(variable, group, n_missing, pct_missing, n_complete, severity) |>
   kable(
-    caption = "Missingness Summary by Variable",
+    caption = "Missingness Summary by Variable (sorted by % missing)",
     col.names = c("Variable", "Group", "N Missing", "% Missing", "N Complete", "Severity")
   ) |>
-  kable_styling(bootstrap_options = c("striped", "hover")) |>
+  kable_styling(bootstrap_options = c("striped", "hover"), font_size = 11) |>
   row_spec(which(overall_miss$severity == "Critical"), background = "#ffcccc") |>
   row_spec(which(overall_miss$severity == "High"), background = "#ffe6cc") |>
-  row_spec(which(overall_miss$severity == "Moderate"), background = "#ffffcc")
+  row_spec(which(overall_miss$severity == "Moderate"), background = "#ffffcc") |>
+  row_spec(which(overall_miss$severity == "Low"), background = "#d4edda")
 ```
 
 ### Visualization
@@ -164,12 +191,14 @@ overall_miss |>
 ```{r}
 #| label: overall-miss-plot
 #| fig-cap: "Missingness by Variable (sorted by % missing)"
+#| fig-height: 10
 
 overall_miss |>
   mutate(variable = reorder(variable, pct_missing)) |>
   ggplot(aes(x = variable, y = pct_missing, fill = severity)) +
   geom_col() +
   geom_hline(yintercept = c(15, 30, 50), linetype = "dashed", alpha = 0.5) +
+  geom_text(aes(label = paste0(pct_missing, "%")), hjust = -0.1, size = 2.5) +
   coord_flip() +
   scale_fill_manual(values = c(
     "Critical" = "#d73027",
@@ -179,26 +208,32 @@ overall_miss |>
   )) +
   labs(
     title = "Missingness by Variable",
+    subtitle = "Red bars (>50%) indicate variables too sparse for reliable analysis",
     x = NULL,
     y = "% Missing",
     fill = "Severity"
   ) +
   theme_minimal() +
-  theme(legend.position = "bottom")
+  theme(legend.position = "bottom") +
+  expand_limits(y = 100)
 ```
 
 ### Missingness by Variable Group
 
 ```{r}
 #| label: miss-by-group
-#| fig-cap: "Missingness by Variable Group"
+#| fig-cap: "Missingness Distribution by Variable Group"
 
 overall_miss |>
   ggplot(aes(x = group, y = pct_missing, fill = group)) +
-  geom_boxplot(alpha = 0.7) +
-  geom_jitter(width = 0.2, alpha = 0.5) +
+  geom_boxplot(alpha = 0.7, outlier.shape = NA) +
+  geom_jitter(width = 0.2, alpha = 0.5, size = 2) +
+  geom_hline(yintercept = 50, linetype = "dashed", color = "red", alpha = 0.7) +
+  annotate("text", x = 0.5, y = 52, label = "Critical threshold (50%)",
+           hjust = 0, size = 3, color = "red") +
   labs(
     title = "Missingness Distribution by Variable Group",
+    subtitle = "SDG 4 Education shows dramatically higher missingness than other groups",
     x = NULL,
     y = "% Missing"
   ) +
@@ -206,7 +241,97 @@ overall_miss |>
   theme(legend.position = "none")
 ```
 
-## 3. Missingness by Year
+## 3. Deep Dive: SDG 4 Education Indicators
+
+::: callout-warning
+## Critical Data Quality Issue
+
+The SDG 4 education indicators show **extremely high missingness**, making most variables unsuitable for analysis. This is a **major limitation** for the study's original scope.
+:::
+
+```{r}
+#| label: sdg4-detail
+
+sdg4_miss <- overall_miss |>
+  filter(group == "SDG 4 (Education)") |>
+  arrange(pct_missing) |>
+  select(variable, pct_missing, severity) |>
+  mutate(
+    `Viable?` = if_else(pct_missing < 30, "Yes",
+                if_else(pct_missing < 50, "Borderline", "No")),
+    `Category` = case_when(
+      grepl("proficient", variable) ~ "Student Proficiency",
+      grepl("trained_teachers", variable) ~ "Teacher Quality",
+      grepl("literacy", variable) ~ "Adult Literacy",
+      grepl("gap", variable) ~ "Equity",
+      TRUE ~ "Completion/Participation"
+    )
+  )
+
+sdg4_miss |>
+  kable(
+    caption = "SDG 4 Education Indicators - Detailed Assessment",
+    col.names = c("Variable", "% Missing", "Severity", "Viable?", "Category")
+  ) |>
+  kable_styling(bootstrap_options = c("striped", "hover")) |>
+  row_spec(which(sdg4_miss$`Viable?` == "Yes"), background = "#d4edda") |>
+  row_spec(which(sdg4_miss$`Viable?` == "Borderline"), background = "#fff3cd") |>
+  row_spec(which(sdg4_miss$`Viable?` == "No"), background = "#f8d7da")
+```
+
+### Why is SDG4 Data So Sparse?
+
+```{r}
+#| label: sdg4-categories
+
+sdg4_miss |>
+  group_by(Category) |>
+  summarise(
+    `N Variables` = n(),
+    `Median Missing %` = median(pct_missing),
+    `Range` = paste0(min(pct_missing), "% - ", max(pct_missing), "%"),
+    `All >50%?` = if_else(all(pct_missing > 50), "Yes", "No")
+  ) |>
+  kable(caption = "SDG4 Missingness by Indicator Category") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+```
+
+**Explanation:**
+
+- **Student Proficiency (87-93% missing)**: Requires standardized testing infrastructure not uniformly implemented across Asia-Pacific
+- **Teacher Quality (51-72% missing)**: Administrative data collection varies widely by country capacity
+- **Adult Literacy (72% missing)**: Often measured only in census years (every 10 years)
+- **Completion Rates (33-52% missing)**: Higher-level education tracked less consistently than primary
+
+## 4. Comparison: SDG 3 vs SDG 4
+
+```{r}
+#| label: sdg-comparison
+#| fig-cap: "SDG 3 (Health) vs SDG 4 (Education) Missingness"
+
+overall_miss |>
+  filter(grepl("^sdg", variable)) |>
+  mutate(
+    sdg = if_else(grepl("^sdg3_", variable), "SDG 3 (Health)", "SDG 4 (Education)"),
+    variable_short = gsub("^sdg[34]_", "", variable)
+  ) |>
+  ggplot(aes(x = reorder(variable_short, pct_missing), y = pct_missing, fill = sdg)) +
+  geom_col() +
+  geom_hline(yintercept = 30, linetype = "dashed", alpha = 0.5) +
+  coord_flip() +
+  facet_wrap(~sdg, scales = "free_y", ncol = 1) +
+  scale_fill_manual(values = c("SDG 3 (Health)" = "#4575b4", "SDG 4 (Education)" = "#d73027")) +
+  labs(
+    title = "SDG 3 (Health) vs SDG 4 (Education) Data Quality",
+    subtitle = "SDG 3 has 3 solid indicators; SDG 4 has mostly critical missingness",
+    x = NULL,
+    y = "% Missing"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+## 5. Missingness by Year
 
 ```{r}
 #| label: miss-by-year
@@ -220,8 +345,8 @@ miss_by_year <- tax_structure_and_sdg |>
 
 miss_by_year |>
   kable(caption = "Missingness (%) by Year") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), font_size = 11) |>
-  scroll_box(width = "100%")
+  kable_styling(bootstrap_options = c("striped", "hover"), font_size = 10) |>
+  scroll_box(width = "100%", height = "400px")
 ```
 
 ### Time Trends
@@ -229,7 +354,7 @@ miss_by_year |>
 ```{r}
 #| label: miss-time-plot
 #| fig-cap: "Missingness Trends Over Time"
-#| fig-height: 8
+#| fig-height: 10
 
 miss_by_year |>
   pivot_longer(-year, names_to = "variable", values_to = "pct_missing") |>
@@ -243,10 +368,11 @@ miss_by_year |>
     )
   ) |>
   ggplot(aes(x = year, y = pct_missing, color = variable)) +
-  geom_line(linewidth = 1, alpha = 0.7) +
-  geom_point(size = 2) +
-  facet_wrap(~group, scales = "fixed", ncol = 2) +
+  geom_line(linewidth = 0.8, alpha = 0.7) +
+  geom_point(size = 1.5) +
+  facet_wrap(~group, scales = "free_y", ncol = 2) +
   scale_x_continuous(breaks = seq(2014, 2023, 2)) +
+  geom_hline(yintercept = 50, linetype = "dashed", alpha = 0.3, color = "red") +
   labs(
     title = "Missingness Trends by Variable Group",
     x = "Year",
@@ -256,111 +382,22 @@ miss_by_year |>
   theme(
     legend.position = "bottom",
     legend.title = element_blank(),
+    legend.text = element_text(size = 7),
     axis.text.x = element_text(angle = 45, hjust = 1)
   ) +
-  guides(color = guide_legend(ncol = 2))
+  guides(color = guide_legend(ncol = 3, override.aes = list(size = 2)))
 ```
 
 ::: callout-note
-## Observations
+## Temporal Patterns
 
--   **2014** shows elevated missingness across tax variables (\~48%)
--   **`sdg3_coverage_of_essential_health_services`** shows alternating pattern (100% missing in even years)
--   **`sdg4_adult_literacy_rate`** consistently high missingness (\>60%) across all years
--   **Moderating variables** show varying patterns - check data availability for each
+- **Tax variables**: Elevated missingness in 2014 (~48%), stable 7-10% thereafter
+- **SDG3 coverage**: 100% missing in even years (biennial collection - structural)
+- **SDG4 indicators**: Consistently high missingness (>50%) across all years - **not improving over time**
+- **Moderating variables**: Debt-to-GDP shows concerning 50%+ missingness throughout
 :::
 
-## 4. Missingness by Country
-
-```{r}
-#| label: miss-by-country
-
-miss_by_country <- tax_structure_and_sdg |>
-  group_by(country) |>
-  summarise(
-    across(-year, ~ sum(is.na(.)))
-  ) |>
-  mutate(total_missing = rowSums(across(-country))) |>
-  arrange(desc(total_missing))
-
-miss_by_country |>
-  select(country, total_missing) |>
-  head(15) |>
-  kable(
-    caption = "Top 15 Countries by Total Missing Values",
-    col.names = c("Country", "Total Missing Values")
-  ) |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
-```
-
-### Heatmap
-
-```{r}
-#| label: miss-heatmap
-#| fig-cap: "Missingness Heatmap by Country and Variable"
-#| fig-height: 12
-
-miss_by_country_var <- tax_structure_and_sdg |>
-  group_by(country) |>
-  summarise(across(-year, ~ mean(is.na(.)) * 100)) |>
-  pivot_longer(-country, names_to = "variable", values_to = "pct_missing") |>
-  mutate(
-    group = case_when(
-      grepl("^tax_", variable) ~ "Tax",
-      grepl("^sdg3_", variable) ~ "SDG3",
-      grepl("^sdg4_", variable) ~ "SDG4",
-      grepl("^mod_", variable) ~ "Mod",
-      TRUE ~ "Other"
-    )
-  )
-
-ggplot(miss_by_country_var, aes(x = variable, y = reorder(country, -pct_missing), fill = pct_missing)) +
-  geom_tile(color = "white", linewidth = 0.5) +
-  scale_fill_gradient2(
-    low = "white",
-    mid = "orange",
-    high = "red",
-    midpoint = 50,
-    name = "% Missing"
-  ) +
-  labs(
-    title = "Missingness Heatmap",
-    x = "Variable",
-    y = "Country"
-  ) +
-  theme_minimal() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 7),
-    axis.text.y = element_text(size = 7)
-  )
-```
-
-## 5. Missingness Patterns
-
-```{r}
-#| label: miss-patterns
-#| fig-cap: "Common Missingness Patterns (UpSet Plot)"
-
-tax_structure_and_sdg |>
-  select(-country, -year) |>
-  gg_miss_upset(nsets = 10)
-```
-
-### Visual Overview
-
-```{r}
-#| label: vis-miss
-#| fig-cap: "Missingness Pattern Overview"
-
-tax_structure_and_sdg |>
-  select(-country, -year) |>
-  vis_miss(cluster = TRUE) +
-  labs(title = "Missingness Pattern (Clustered)")
-```
-
-## 6. Structural Missingness Analysis
-
-### Coverage of Essential Health Services
+## 6. Structural Missingness: Coverage of Essential Health Services
 
 ```{r}
 #| label: structural-coverage
@@ -370,70 +407,31 @@ coverage_pattern <- tax_structure_and_sdg |>
   summarise(
     pct_missing = round(mean(is.na(sdg3_coverage_of_essential_health_services)) * 100, 1)
   ) |>
-    mutate(
+  mutate(
     year_type = if_else(year %% 2 == 0, "Even", "Odd")
   )
 
 coverage_pattern |>
   kable(
-    caption = "Coverage of Essential Health Services - Biennial Pattern?",
+    caption = "Coverage of Essential Health Services - Biennial Collection Pattern",
     col.names = c("Year", "% Missing", "Year Type")
   ) |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) |>
+  row_spec(which(coverage_pattern$year_type == "Even"), background = "#ffe6cc")
 ```
 
 ::: callout-warning
 ## Structural Missingness Detected
 
-`sdg3_coverage_of_essential_health_services` shows **100% missingness in even years** (2014, 2016, 2018, 2020, 2022). This indicates biennial data collection, not random missingness.
+`sdg3_coverage_of_essential_health_services` shows **100% missingness in even years** (2014, 2016, 2018, 2020, 2022). This is **structural missingness** due to biennial data collection.
 
-**Implication:** This variable should NOT be imputed using standard methods like MICE, as missing values represent years when no measurement was taken.
+**Implication:** Cannot impute - missing values represent unmeasured years. Must drop from analysis.
 :::
-
-### Moderating Variables Missingness
-
-```{r}
-#| label: mod-vars-missingness
-
-mod_miss <- tax_structure_and_sdg |>
-  group_by(year) |>
-  summarise(
-    across(all_of(mod_vars), ~ round(mean(is.na(.)) * 100, 1))
-  )
-
-mod_miss |>
-  kable(caption = "Moderating Variables Missingness by Year (%)") |>
-  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
-```
-
-```{r}
-#| label: mod-vars-plot
-#| fig-cap: "Moderating Variables Missingness Over Time"
-
-mod_miss |>
-  pivot_longer(-year, names_to = "variable", values_to = "pct_missing") |>
-  ggplot(aes(x = year, y = pct_missing, color = variable)) +
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 3) +
-  scale_x_continuous(breaks = 2014:2023) +
-  labs(
-    title = "Moderating Variables Missingness Trends",
-    x = "Year",
-    y = "% Missing",
-    color = "Variable"
-  ) +
-  theme_minimal() +
-  theme(legend.position = "bottom")
-```
 
 ## 7. Complete Cases Analysis
 
 ```{r}
 #| label: complete-cases
-
-# Define variable sets for analysis
-mortality_vars <- c("sdg3_under_5_mortality_rate", "sdg3_neonatal_mortality_rate", "sdg3_maternal_mortality_ratio")
-tax_vars_analysis <- c("tax_goods_and_services", "tax_income_and_profits")
 
 complete_summary <- tax_structure_and_sdg |>
   mutate(
@@ -441,10 +439,11 @@ complete_summary <- tax_structure_and_sdg |>
     sdg3_all = complete.cases(pick(all_of(sdg3_vars))),
     sdg3_mortality = complete.cases(pick(all_of(mortality_vars))),
     sdg4_all = complete.cases(pick(all_of(sdg4_vars))),
+    sdg4_lower_only = !is.na(sdg4_lower_secondary),
     tax_complete = complete.cases(pick(all_of(tax_vars_analysis))),
     mod_complete = complete.cases(pick(all_of(mod_vars))),
-    analysis_ready = complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis)))),
-    full_analysis = complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis, mod_vars))))
+    analysis_ready_sdg3 = complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis)))),
+    full_analysis_sdg3 = complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis, mod_vars))))
   ) |>
   summarise(
     `Total Observations` = n(),
@@ -452,10 +451,11 @@ complete_summary <- tax_structure_and_sdg |>
     `All SDG3 Complete` = sum(sdg3_all),
     `Mortality Indicators Complete` = sum(sdg3_mortality),
     `All SDG4 Complete` = sum(sdg4_all),
+    `SDG4 Lower Secondary Only` = sum(sdg4_lower_only),
     `Tax Variables Complete` = sum(tax_complete),
     `Moderating Variables Complete` = sum(mod_complete),
-    `Analysis-Ready (Mortality + Tax)` = sum(analysis_ready),
-    `Full Analysis (Mortality + Tax + Mod)` = sum(full_analysis)
+    `Analysis-Ready (SDG3: Mortality + Tax)` = sum(analysis_ready_sdg3),
+    `Full Analysis (SDG3 + Moderators)` = sum(full_analysis_sdg3)
   ) |>
   pivot_longer(everything(), names_to = "Criterion", values_to = "N") |>
   mutate(Percentage = round(N / n_obs * 100, 1))
@@ -465,89 +465,109 @@ complete_summary |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
-### Complete Cases by Year (Full Analysis Variables)
+::: callout-important
+## Key Finding
+
+- **All SDG4 Complete**: Only **0 observations** have all 12 education indicators
+- **SDG4 Lower Secondary Only**: 194 observations (67%) - **if using single indicator**
+- **SDG3 Mortality Complete**: 243 observations (84%) - **excellent for robust analysis**
+:::
+
+### Complete Cases by Year (2015-2022 Analysis Period)
 
 ```{r}
 #| label: complete-by-year
 
 complete_by_year <- tax_structure_and_sdg |>
+  filter(year >= 2015 & year <= 2022) |>
   mutate(
-    analysis_ready = complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis)))),
-    full_analysis = complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis, mod_vars))))
+    sdg3_analysis = complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis)))),
+    sdg3_full = complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis, mod_vars)))),
+    sdg4_single = !is.na(sdg4_lower_secondary) & complete.cases(pick(all_of(tax_vars_analysis)))
   ) |>
   group_by(year) |>
   summarise(
     n_countries = n(),
-    n_basic_complete = sum(analysis_ready),
-    pct_basic_complete = round(mean(analysis_ready) * 100, 1),
-    n_full_complete = sum(full_analysis),
-    pct_full_complete = round(mean(full_analysis) * 100, 1)
+    sdg3_basic = sum(sdg3_analysis),
+    pct_sdg3_basic = round(mean(sdg3_analysis) * 100, 1),
+    sdg3_w_mod = sum(sdg3_full),
+    pct_sdg3_w_mod = round(mean(sdg3_full) * 100, 1),
+    sdg4_single_ind = sum(sdg4_single),
+    pct_sdg4_single = round(mean(sdg4_single) * 100, 1)
   )
 
 complete_by_year |>
   kable(
-    caption = "Complete Cases by Year",
-    col.names = c("Year", "N Countries", "Basic Complete", "% Basic", "Full Complete", "% Full")
+    caption = "Complete Cases by Year (2015-2022)",
+    col.names = c("Year", "N Countries", "SDG3 Basic", "% SDG3", "SDG3 + Mod", "% Full", "SDG4 Single", "% SDG4")
   ) |>
   kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE)
 ```
 
 ```{r}
 #| label: complete-by-year-plot
-#| fig-cap: "Complete Cases Available by Year"
+#| fig-cap: "Complete Cases for Analysis by Year"
 
 complete_by_year |>
   pivot_longer(
-    cols = c(n_basic_complete, n_full_complete),
+    cols = c(sdg3_basic, sdg3_w_mod, sdg4_single_ind),
     names_to = "type",
     values_to = "n_complete"
   ) |>
-  mutate(type = if_else(type == "n_basic_complete", "Basic (Mortality + Tax)", "Full (+ Moderators)")) |>
+  mutate(type = case_when(
+    type == "sdg3_basic" ~ "SDG3: Mortality + Tax",
+    type == "sdg3_w_mod" ~ "SDG3: + Moderators",
+    type == "sdg4_single_ind" ~ "SDG4: Lower Sec + Tax"
+  )) |>
   ggplot(aes(x = factor(year), y = n_complete, fill = type)) +
   geom_col(position = "dodge", alpha = 0.8) +
   geom_hline(yintercept = 29, linetype = "dashed", color = "red", alpha = 0.7) +
   annotate("text", x = 1, y = 29.5, label = "Max (29 countries)", hjust = 0, size = 3, color = "red") +
   labs(
-    title = "Complete Cases for Analysis by Year",
-    subtitle = "Basic: 3 mortality + 2 tax variables | Full: + 3 moderating variables",
+    title = "Complete Cases for Analysis by Year (2015-2022)",
+    subtitle = "SDG3 analysis robust; SDG4 limited to single indicator at best",
     x = "Year",
     y = "Number of Complete Cases",
     fill = "Analysis Type"
   ) +
+  scale_fill_manual(values = c(
+    "SDG3: Mortality + Tax" = "#4575b4",
+    "SDG3: + Moderators" = "#91bfdb",
+    "SDG4: Lower Sec + Tax" = "#fc8d59"
+  )) +
   theme_minimal() +
   theme(legend.position = "bottom")
 ```
 
 ## 8. Recommendations
 
-### Variables by Usability
+### Variable Usability Classification
 
 ```{r}
 #| label: recommendations-table
 
-# Generate recommendations dynamically from actual missingness data
 recommendations <- overall_miss |>
   select(variable, group, pct_missing, severity) |>
   mutate(
     Recommendation = case_when(
-      # Structural missingness (biennial collection)
-      variable == "sdg3_coverage_of_essential_health_services" ~ "Drop (structural missingness - biennial)",
-      # Critical missingness (>50%)
+      # Structural missingness
+      variable == "sdg3_coverage_of_essential_health_services" ~ "Drop (biennial - structural)",
+      # Critical SDG4 variables
+      pct_missing > 50 & grepl("^sdg4_", variable) ~ "Drop (too sparse - regional data gap)",
+      # Other critical missingness
       pct_missing > 50 ~ "Drop (too sparse for reliable analysis)",
-      # High missingness (30-50%)
-      pct_missing > 30 ~ "Consider dropping or impute with caution",
-      # Moderate missingness (15-30%)
-      pct_missing > 15 ~ "Use with caution; consider interpolation",
-      # Low missingness for tax (exclude 2014)
-      grepl("^tax_", variable) & pct_missing <= 15 ~ "Use as-is (exclude 2014)",
+      # High missingness
+      pct_missing > 30 & pct_missing <= 50 ~ "Borderline - use with extreme caution",
+      # Moderate missingness
+      pct_missing > 15 & pct_missing <= 30 ~ "Usable with interpolation/caution",
       # Low missingness
+      grepl("^tax_", variable) & pct_missing <= 15 ~ "Use (exclude 2014)",
       TRUE ~ "Use as-is"
     ),
-    `Include in Analysis` = case_when(
+    `Include?` = case_when(
       variable == "sdg3_coverage_of_essential_health_services" ~ "No",
       pct_missing > 50 ~ "No",
-      pct_missing > 30 ~ "No",
-      pct_missing > 15 ~ "Maybe",
+      pct_missing > 30 ~ "Maybe",
       TRUE ~ "Yes"
     )
   ) |>
@@ -560,63 +580,160 @@ recommendations <- overall_miss |>
   )
 
 recommendations |>
-  kable(caption = "Variable Recommendations (sorted by % missing)") |>
-  kable_styling(bootstrap_options = c("striped", "hover")) |>
-  row_spec(which(recommendations$`Include in Analysis` == "Yes"), background = "#d4edda") |>
-  row_spec(which(recommendations$`Include in Analysis` == "Maybe"), background = "#fff3cd") |>
-  row_spec(which(recommendations$`Include in Analysis` == "No"), background = "#f8d7da")
+  kable(caption = "Variable Recommendations (sorted by data quality)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), font_size = 10) |>
+  row_spec(which(recommendations$`Include?` == "Yes"), background = "#d4edda") |>
+  row_spec(which(recommendations$`Include?` == "Maybe"), background = "#fff3cd") |>
+  row_spec(which(recommendations$`Include?` == "No"), background = "#f8d7da") |>
+  scroll_box(height = "500px")
+```
+
+### Summary of Viable Variables
+
+```{r}
+#| label: viable-summary
+
+viable_summary <- recommendations |>
+  group_by(Group, `Include?`) |>
+  summarise(Count = n(), .groups = "drop") |>
+  pivot_wider(names_from = `Include?`, values_from = Count, values_fill = 0) |>
+  mutate(Total = Yes + Maybe + No) |>
+  select(Group, Yes, Maybe, No, Total)
+
+viable_summary |>
+  kable(caption = "Variable Viability by Group") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) |>
+  column_spec(2, background = "#d4edda") |>
+  column_spec(3, background = "#fff3cd") |>
+  column_spec(4, background = "#f8d7da")
 ```
 
 ### Recommended Analysis Strategy
 
 ::: callout-tip
-## Primary Analysis Approach
+## Primary Analysis (FEASIBLE)
 
-1.  **Time Period:** 2015-2022 (exclude 2014 due to high tax missingness, 2023 for edge effects)
-2.  **SDG3 Composite:** Use 3 mortality indicators only (sdg3_under_5, sdg3_neonatal, sdg3_maternal)
-3.  **Tax Variables:** `tax_goods_and_services`, `tax_income_and_profits`
-4.  **Moderating Variables:**
-    -   `mod_gdp_per_capita` (13.8% missing) - usable
-    -   `mod_macroeconomic_population` (20.7% missing) - use with caution
-    -   `mod_debt_to_gpt_ratio` (51.7% missing) - **problematic, consider dropping or imputation**
-5.  **Missing Data:** Complete case analysis on selected variables
-6.  **Sensitivity:** Consider linear interpolation for population; debt-to-GDP may require alternative data source
+**Focus: Tax Structure → SDG 3 Health Outcomes**
+
+1. **Time Period**: 2015-2022 (exclude 2014: tax missingness; 2023: edge effects)
+2. **Dependent Variable**: SDG3 composite index via PCA
+   - `sdg3_under_5_mortality_rate` (15.9% missing)
+   - `sdg3_neonatal_mortality_rate` (6.9% missing)
+   - `sdg3_maternal_mortality_ratio` (6.9% missing)
+3. **Independent Variables**:
+   - `tax_goods_and_services` (7.6% missing)
+   - `tax_income_and_profits` (7.2% missing)
+4. **Moderating Variables**:
+   - `mod_gdp_per_capita` (13.8% missing) ✅
+   - `mod_macroeconomic_population` (20.7% missing) ⚠️ linear interpolation
+   - `mod_debt_to_gpt_ratio` (51.7% missing) ❌ **DROP or find alternative**
+5. **Missing Data Strategy**: Complete case analysis (sufficient N)
+6. **Expected Sample**: ~200-220 observations (85-95% retention)
+
+**Status**: ✅ **ROBUST - proceed with confidence**
 :::
 
-### Analysis-Ready Dataset Summary
+::: callout-warning
+## Secondary Analysis (SEVERELY LIMITED)
+
+**Focus: Tax Structure → SDG 4 Education Outcomes**
+
+**MAJOR LIMITATION IDENTIFIED:**
+
+- **Cannot create SDG4 composite index** (10/12 variables >50% missing)
+- **Only option**: Single indicator analysis using `sdg4_lower_secondary` (33% missing)
+- **Outcome**: Analysis will be **incomplete** and **not comparable** to SDG3 analysis
+
+**Recommendations:**
+
+1. **Disclose limitation** to client immediately
+2. **Consider alternative**: Drop SDG4 analysis entirely, focus only on SDG3
+3. **If proceeding with SDG4**: Frame as exploratory/preliminary with major caveats
+4. **Alternative data source**: Seek UNESCO or World Bank education databases for gap-filling
+
+**Status**: ⚠️ **HIGH RISK - requires client consultation before proceeding**
+:::
+
+### Analysis-Ready Dataset: Expected Sample Sizes
 
 ```{r}
 #| label: final-summary
-#| code-fold: true
 
-# Basic analysis (mortality + tax only)
-analysis_ready_basic <- tax_structure_and_sdg |>
+# SDG3 analysis datasets
+sdg3_basic <- tax_structure_and_sdg |>
   filter(year >= 2015 & year <= 2022) |>
   filter(complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis)))))
 
-# Full analysis (including moderators)
-analysis_ready_full <- tax_structure_and_sdg |>
+sdg3_with_mod <- tax_structure_and_sdg |>
   filter(year >= 2015 & year <= 2022) |>
-  filter(complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis, mod_vars)))))
+  filter(complete.cases(pick(all_of(c(mortality_vars, tax_vars_analysis, c("mod_gdp_per_capita", "mod_macroeconomic_population"))))))
 
+# SDG4 single indicator
+sdg4_single <- tax_structure_and_sdg |>
+  filter(year >= 2015 & year <= 2022) |>
+  filter(!is.na(sdg4_lower_secondary) & complete.cases(pick(all_of(tax_vars_analysis))))
 
+tibble(
+  `Analysis Type` = c(
+    "SDG3: Mortality + Tax (Basic)",
+    "SDG3: + Moderators (GDP, Pop)",
+    "SDG4: Lower Secondary + Tax (Limited)",
+    "Maximum Possible (29 × 8)"
+  ),
+  Observations = c(
+    nrow(sdg3_basic),
+    nrow(sdg3_with_mod),
+    nrow(sdg4_single),
+    29 * 8
+  ),
+  Countries = c(
+    n_distinct(sdg3_basic$country),
+    n_distinct(sdg3_with_mod$country),
+    n_distinct(sdg4_single$country),
+    29
+  ),
+  `Retention %` = c(
+    round(nrow(sdg3_basic) / (29 * 8) * 100, 1),
+    round(nrow(sdg3_with_mod) / (29 * 8) * 100, 1),
+    round(nrow(sdg4_single) / (29 * 8) * 100, 1),
+    100
+  ),
+  Feasibility = c("✅ Excellent", "✅ Good", "⚠️ Limited", "—")
+) |>
+  kable(caption = "Expected Sample Sizes (2015-2022)") |>
+  kable_styling(bootstrap_options = c("striped", "hover"), full_width = FALSE) |>
+  row_spec(1:2, background = "#d4edda") |>
+  row_spec(3, background = "#fff3cd")
 ```
 
-```{r}
-#| echo: false
-cat("=== Basic Analysis (Mortality + Tax) ===\n")
-cat("- Observations:", nrow(analysis_ready_basic), "\n")
-cat("- Countries:", n_distinct(analysis_ready_basic$country), "\n")
-cat("- Years:", n_distinct(analysis_ready_basic$year), "\n")
-cat("- Retention:", round(nrow(analysis_ready_basic) / (29 * 8) * 100, 1), "% of possible observations\n\n")
+## 9. Next Steps & Client Consultation Points
 
-cat("=== Full Analysis (+ Moderating Variables) ===\n")
-cat("- Observations:", nrow(analysis_ready_full), "\n")
-cat("- Countries:", n_distinct(analysis_ready_full$country), "\n")
-cat("- Years:", n_distinct(analysis_ready_full$year), "\n")
-cat("- Retention:", round(nrow(analysis_ready_full) / (29 * 8) * 100, 1), "% of possible observations\n")
-```
+::: callout-important
+## Required Client Discussion
+
+Before proceeding with analysis, consult with client on:
+
+1. **SDG4 Limitations**:
+   - Disclose that only 1 out of 12 education indicators is borderline usable
+   - Explain that SDG4 analysis will be **severely limited** compared to original scope
+   - Discuss options: (a) Drop SDG4 entirely, (b) Seek alternative data, (c) Proceed with caveats
+
+2. **Debt-to-GDP Ratio** (51.7% missing):
+   - Keep or drop as moderating variable?
+   - Alternative: Replace with government expenditure or other fiscal indicator?
+
+3. **Time Period**:
+   - Confirm 2015-2022 is acceptable (excludes 2014 and 2023)
+
+4. **PCA Approach**:
+   - Confirm 3-indicator mortality composite is acceptable for SDG3
+
+5. **Revised Deliverables**:
+   - Update contract/proposal to reflect SDG4 data limitations
+:::
 
 ------------------------------------------------------------------------
 
 *Report generated on `r Sys.Date()`*
+
+**Critical Finding**: This analysis reveals that **SDG 4 education indicators are largely unavailable** in Asia-Pacific region for the study period, fundamentally limiting the scope of the education outcome analysis. Immediate client consultation recommended.
