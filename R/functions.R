@@ -162,3 +162,122 @@ calculate_missingness <- function(data) {
       )
     )
 }
+
+#' Create SDG3 health index using PCA on mortality indicators
+#'
+#' @param tax_structure_and_sdg Full panel dataset
+#' @return Tibble with country, year, and sdg3_index
+create_sdg3_index <- function(tax_structure_and_sdg) {
+  # Select mortality indicators and identifiers
+  sdg3_data <- tax_structure_and_sdg |>
+    dplyr::select(
+      country,
+      year,
+      sdg3_under_5_mortality_rate,
+      sdg3_neonatal_mortality_rate,
+      sdg3_maternal_mortality_ratio
+    ) |>
+    tidyr::drop_na()
+
+  # Extract just the mortality indicators for PCA
+  mortality_vars <- sdg3_data |>
+    dplyr::select(
+      sdg3_under_5_mortality_rate,
+      sdg3_neonatal_mortality_rate,
+      sdg3_maternal_mortality_ratio
+    )
+
+  # Run PCA with standardization
+  pca_result <- stats::prcomp(mortality_vars, scale. = TRUE)
+
+  # Extract PC1 scores and combine with identifiers
+  sdg3_data$sdg3_index <- pca_result$x[, 1]
+
+  # Return only identifiers and index
+  sdg3_data |>
+    dplyr::select(country, year, sdg3_index)
+}
+
+#' Validate PCA suitability using statistical tests
+#'
+#' @param data Matrix or data frame with numeric columns for PCA
+#' @return List with correlation matrix, KMO result, Bartlett result, and variance explained
+validate_pca_suitability <- function(data) {
+  # Calculate correlation matrix
+  cor_matrix <- stats::cor(data, use = "complete.obs")
+
+  # Run KMO test (requires psych package)
+  kmo_result <- psych::KMO(data)
+
+  # Run Bartlett's test
+  bartlett_result <- psych::cortest.bartlett(
+    cor_matrix,
+    n = nrow(tidyr::drop_na(data))
+  )
+
+  # Run PCA to get variance explained
+  pca_result <- stats::prcomp(data, scale. = TRUE)
+  variance_explained <- summary(pca_result)$importance[2, 1]
+
+  # Return all validation metrics
+  list(
+    cor_matrix = cor_matrix,
+    kmo_result = kmo_result,
+    bartlett_result = bartlett_result,
+    variance_explained = variance_explained
+  )
+}
+
+#' Impute missing values in SDG4 education indicator
+#'
+#' @param tax_structure_and_sdg Full panel dataset
+#' @param m Number of imputations (default 5)
+#' @param maxit Number of iterations (default 20)
+#' @param seed Random seed for reproducibility (default 123)
+#' @return Tibble with country, year, and imputed sdg4_lower_secondary
+impute_sdg4_education <- function(tax_structure_and_sdg,
+                                    m = 5,
+                                    maxit = 20,
+                                    seed = 123) {
+  # Select variables for imputation
+  imputation_data <- tax_structure_and_sdg |>
+    dplyr::select(
+      country,
+      year,
+      sdg4_lower_secondary,
+      mod_gdp_per_capita,
+      tax_income_and_profits
+    ) |>
+    # Remove rows where predictors are completely missing
+    dplyr::filter(!is.na(mod_gdp_per_capita) & !is.na(tax_income_and_profits))
+
+  # Initialize mice
+  init <- mice::mice(imputation_data, maxit = 0, printFlag = FALSE)
+
+  # Set method to PMM for sdg4_lower_secondary
+  meth <- init$method
+  meth["sdg4_lower_secondary"] <- "pmm"
+
+  # Set predictor matrix (don't use year as linear predictor)
+  pred <- init$predictorMatrix
+  pred[, "year"] <- 0
+
+  # Run multiple imputation
+  set.seed(seed)
+  imp_result <- mice::mice(
+    imputation_data,
+    method = meth,
+    predictorMatrix = pred,
+    m = m,
+    maxit = maxit,
+    seed = seed,
+    printFlag = FALSE
+  )
+
+  # Extract first completed dataset
+  completed_data <- mice::complete(imp_result, action = 1)
+
+  # Return only necessary columns
+  completed_data |>
+    dplyr::select(country, year, sdg4_lower_secondary)
+}

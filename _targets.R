@@ -18,7 +18,9 @@ tar_option_set(
     "googlesheets4",
     "dplyr",
     "tidyr",
-    "pointblank"
+    "pointblank",
+    "mice",      # For multiple imputation
+    "psych"      # For PCA validation tests (KMO, Bartlett)
   )
 )
 
@@ -163,7 +165,7 @@ list(
     integrate_panel_data(
       !!!rlang::syms(paste0("tidy_", all_variables))
     )
-  )
+  ),
 
   # ============================================================================
   # MISSINGNESS ANALYSIS
@@ -177,4 +179,68 @@ list(
   # ============================================================================
   # PCA FOR SDG3 INDEX
   # ============================================================================
+
+  # Validate PCA suitability for SDG3 mortality indicators
+  tar_target(
+    sdg3_pca_validation,
+    {
+      mortality_data <- tax_structure_and_sdg |>
+        dplyr::select(
+          sdg3_under_5_mortality_rate,
+          sdg3_neonatal_mortality_rate,
+          sdg3_maternal_mortality_ratio
+        ) |>
+        tidyr::drop_na()
+
+      validate_pca_suitability(mortality_data)
+    }
+  ),
+
+  # Create SDG3 health index using PCA
+  tar_target(
+    sdg3_index,
+    create_sdg3_index(tax_structure_and_sdg)
+  ),
+
+  # ============================================================================
+  # IMPUTATION FOR SDG4 EDUCATION
+  # ============================================================================
+
+  # Impute missing values in SDG4 lower secondary completion rate
+  tar_target(
+    sdg4_imputed,
+    impute_sdg4_education(
+      tax_structure_and_sdg,
+      m = 5,
+      maxit = 20,
+      seed = 123
+    )
+  ),
+
+  # ============================================================================
+  # ANALYSIS-READY DATASET
+  # ============================================================================
+
+  # Combine SDG3 index, imputed SDG4, and full dataset
+  tar_target(
+    analysis_ready_data,
+    {
+      tax_structure_and_sdg |>
+        dplyr::left_join(sdg3_index, by = c("country", "year")) |>
+        dplyr::left_join(
+          sdg4_imputed |> dplyr::select(country, year, sdg4_imputed = sdg4_lower_secondary),
+          by = c("country", "year")
+        )
+    }
+  ),
+
+  # ============================================================================
+  # QUARTO REPORT
+  # ============================================================================
+
+  # Render data preparation report
+  tar_quarto(
+    data_preparation_report,
+    path = "data_preparation_report.qmd"
+  )
 )
