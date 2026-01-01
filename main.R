@@ -334,29 +334,90 @@ densityplot(imp_simple, ~sdg4_lower_secondary)
 # Extract completed dataset
 completed_data_simple <- complete(imp_simple, action = 1)
 
-# Alternative: If that still fails, use even simpler approach with just GDP
-# This is most robust but ignores some information
-imputation_data_minimal <- tax_structure_and_sdg |>
+
+# Panel Imputation (Multilevel) ------------------------------------------
+
+#' Proper panel imputation using multilevel models
+#' This respects the nested structure: observations within countries
+
+# Prepare data for panel imputation
+# Strategy: Impute all 4 strongly correlated SDG4 variables using only each other
+# These variables are highly correlated (r = 0.74-0.93) and can predict each other
+# IMPORTANT: Do NOT include moderators or tax variables - we need to preserve
+# those relationships for the regression analysis!
+# Variables to impute:
+# - sdg4_lower_secondary (33% missing, r = 0.926 with primary_secondary)
+# - sdg4_prop_primary_secondary (r = 0.926 with lower_secondary)
+# - sdg4_adult_literacy_rate (r = 0.776 with lower_secondary)
+# - sdg4_upper_secondary (r = 0.744 with lower_secondary)
+panel_data <- tax_structure_and_sdg |>
   select(
     country,
     year,
     sdg4_lower_secondary,
-    mod_gdp_per_capita
+    sdg4_prop_primary_secondary,
+    sdg4_adult_literacy_rate,
+    sdg4_upper_secondary
   ) |>
-  filter(!is.na(mod_gdp_per_capita))
+  # Convert country to factor and create numeric ID
+  mutate(
+    country_id = as.numeric(as.factor(country)),
+    .after = country
+  )
 
-# Run minimal imputation
-imp_minimal <- mice(
-  imputation_data_minimal,
-  method = "pmm",
-  m = 5,
+# Initialize mice
+init_panel <- mice(panel_data, maxit = 0, printFlag = FALSE)
+
+# Check initialization
+cat("\nPanel imputation initialization:\n")
+print(init_panel$loggedEvents)
+
+# Set imputation methods
+meth_panel <- init_panel$method
+
+# Use 2l.pan for all SDG4 variables (multilevel imputation respecting country clustering)
+# Each variable uses the other 3 SDG4 variables as predictors (plus year and country_id)
+meth_panel["sdg4_lower_secondary"] <- "2l.pan"
+meth_panel["sdg4_prop_primary_secondary"] <- "2l.pan"
+meth_panel["sdg4_adult_literacy_rate"] <- "2l.pan"
+meth_panel["sdg4_upper_secondary"] <- "2l.pan"
+
+# Set predictor matrix
+pred_panel <- init_panel$predictorMatrix
+
+# Specify which variable identifies clusters (country_id)
+# Type codes: 0 = don't use, 1 = fixed effect, 2 = cluster variable, -2 = class variable
+pred_panel[, "country"] <- 0 # Don't use country name
+pred_panel[, "country_id"] <- -2 # Use as cluster identifier
+pred_panel[, "year"] <- 1 # Use as fixed effect predictor
+
+cat("\nPredictor matrix for panel imputation:\n")
+print(pred_panel)
+
+# Run panel imputation
+cat("\nRunning panel imputation (this may take a minute)...\n")
+imp_panel <- mice(
+  panel_data,
+  method = meth_panel,
+  predictorMatrix = pred_panel,
+  m = 5, # 5 imputed datasets
   maxit = 20,
   seed = 123,
-  printFlag = FALSE
+  printFlag = TRUE
 )
 
-# Diagnostics
-plot(imp_minimal)
-densityplot(imp_minimal, ~sdg4_lower_secondary)
+# Check convergence for all imputed variables
+plot(imp_panel)
 
-completed_data_minimal <- complete(imp_minimal, action = 1)
+# Compare imputed vs observed distributions for all SDG4 variables
+densityplot(imp_panel, ~sdg4_lower_secondary)
+densityplot(imp_panel, ~sdg4_prop_primary_secondary)
+densityplot(imp_panel, ~sdg4_adult_literacy_rate)
+densityplot(imp_panel, ~sdg4_upper_secondary)
+
+# Extract completed dataset (use first imputation)
+completed_panel <- complete(imp_panel, action = 1)
+
+
+tar_load(sdg3_correlation_analysis)
+sdg3_correlation_analysis

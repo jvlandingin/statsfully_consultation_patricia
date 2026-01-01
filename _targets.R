@@ -19,8 +19,9 @@ tar_option_set(
     "dplyr",
     "tidyr",
     "pointblank",
-    "mice",      # For multiple imputation
-    "psych"      # For PCA validation tests (KMO, Bartlett)
+    "mice", # For multiple imputation
+    "psych", # For PCA validation tests (KMO, Bartlett)
+    "lattice" # For mice density plots (diagnostics)
   )
 )
 
@@ -177,39 +178,29 @@ list(
   # )
 
   # ============================================================================
-  # PCA FOR SDG3 INDEX
+  # CORRELATION ANALYSIS FOR IMPUTATION VARIABLE SELECTION
   # ============================================================================
 
-  # Validate PCA suitability for SDG3 mortality indicators
+  # Analyze SDG3 health variable correlations
   tar_target(
-    sdg3_pca_validation,
-    {
-      mortality_data <- tax_structure_and_sdg |>
-        dplyr::select(
-          sdg3_under_5_mortality_rate,
-          sdg3_neonatal_mortality_rate,
-          sdg3_maternal_mortality_ratio
-        ) |>
-        tidyr::drop_na()
-
-      validate_pca_suitability(mortality_data)
-    }
+    sdg3_correlation_analysis,
+    analyze_sdg3_correlations(tax_structure_and_sdg)
   ),
 
-  # Create SDG3 health index using PCA
+  # Analyze SDG4 education variable correlations
   tar_target(
-    sdg3_index,
-    create_sdg3_index(tax_structure_and_sdg)
+    sdg4_correlation_analysis,
+    analyze_sdg4_correlations(tax_structure_and_sdg)
   ),
 
   # ============================================================================
-  # IMPUTATION FOR SDG4 EDUCATION
+  # PANEL IMPUTATION AND PCA FOR SDG3 HEALTH
   # ============================================================================
 
-  # Impute missing values in SDG4 lower secondary completion rate
+  # Fit multilevel panel imputation model
   tar_target(
-    sdg4_imputed,
-    impute_sdg4_education(
+    sdg3_imputation_fit,
+    fit_sdg3_panel_imputation(
       tax_structure_and_sdg,
       m = 5,
       maxit = 20,
@@ -217,20 +208,125 @@ list(
     )
   ),
 
+  # Extract all 5 imputed datasets for sensitivity analysis
+  tar_target(
+    sdg3_imputed_datasets,
+    extract_sdg3_imputed_data(sdg3_imputation_fit, action = "all")
+  ),
+
+  # Extract first imputation as primary dataset for PCA
+  tar_target(
+    sdg3_imputed_primary,
+    extract_sdg3_imputed_data(sdg3_imputation_fit, action = 1)
+  ),
+
+  # Extract long format for pooled analysis (optional)
+  tar_target(
+    sdg3_imputed_long,
+    extract_sdg3_imputed_data(sdg3_imputation_fit, action = "long")
+  ),
+
+  # Generate imputation diagnostic plots
+  tar_target(
+    sdg3_imputation_diagnostics,
+    generate_sdg3_imputation_diagnostics(sdg3_imputation_fit)
+  ),
+
+  # Validate PCA suitability on imputed data
+  tar_target(
+    sdg3_pca_validation,
+    {
+      # Select only SDG3 variables for validation
+      sdg3_imputed_primary |>
+        dplyr::select(
+          sdg3_under_5_mortality_rate,
+          sdg3_neonatal_mortality_rate,
+          sdg3_maternal_mortality_ratio
+        ) |>
+        validate_pca_suitability()
+    }
+  ),
+
+  # Fit PCA model on imputed SDG3 data
+  tar_target(
+    sdg3_pca_fit,
+    fit_sdg3_pca(sdg3_imputed_primary)
+  ),
+
+  # Extract SDG3 index from PCA
+  tar_target(
+    sdg3_index,
+    extract_sdg3_index(sdg3_pca_fit)
+  ),
+
+  # ============================================================================
+  # PANEL IMPUTATION AND PCA FOR SDG4 EDUCATION
+  # ============================================================================
+
+  # Fit multilevel panel imputation model
+  tar_target(
+    sdg4_imputation_fit,
+    fit_sdg4_panel_imputation(
+      tax_structure_and_sdg,
+      m = 5,
+      maxit = 20,
+      seed = 123
+    )
+  ),
+
+  # Extract all 5 imputed datasets for sensitivity analysis
+  tar_target(
+    sdg4_imputed_datasets,
+    extract_sdg4_imputed_data(sdg4_imputation_fit, action = "all")
+  ),
+
+  # Extract first imputation as primary dataset for PCA
+  tar_target(
+    sdg4_imputed_primary,
+    extract_sdg4_imputed_data(sdg4_imputation_fit, action = 1)
+  ),
+
+  # Extract long format for pooled analysis (optional)
+  tar_target(
+    sdg4_imputed_long,
+    extract_sdg4_imputed_data(sdg4_imputation_fit, action = "long")
+  ),
+
+  # Generate imputation diagnostic plots
+  tar_target(
+    sdg4_imputation_diagnostics,
+    generate_sdg4_imputation_diagnostics(sdg4_imputation_fit)
+  ),
+
+  # Validate PCA suitability on imputed data
+  tar_target(
+    sdg4_pca_validation,
+    validate_sdg4_pca_suitability(sdg4_imputed_primary)
+  ),
+
+  # Fit PCA model on imputed SDG4 data
+  tar_target(
+    sdg4_pca_fit,
+    fit_sdg4_pca(sdg4_imputed_primary)
+  ),
+
+  # Extract SDG4 index from PCA
+  tar_target(
+    sdg4_index,
+    extract_sdg4_index(sdg4_pca_fit)
+  ),
+
   # ============================================================================
   # ANALYSIS-READY DATASET
   # ============================================================================
 
-  # Combine SDG3 index, imputed SDG4, and full dataset
+  # Combine SDG3 index, SDG4 index, and full dataset
   tar_target(
     analysis_ready_data,
     {
       tax_structure_and_sdg |>
         dplyr::left_join(sdg3_index, by = c("country", "year")) |>
-        dplyr::left_join(
-          sdg4_imputed |> dplyr::select(country, year, sdg4_imputed = sdg4_lower_secondary),
-          by = c("country", "year")
-        )
+        dplyr::left_join(sdg4_index, by = c("country", "year"))
     }
   ),
 
