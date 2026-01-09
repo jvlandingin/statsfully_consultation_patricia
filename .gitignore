@@ -11,6 +11,6 @@ archive
 
 *.xlsx
 *.csv
-
+*.pdf
 
 _targets/meta/meta
