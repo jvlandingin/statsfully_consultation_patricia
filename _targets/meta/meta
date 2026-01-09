@@ -105,7 +105,6 @@ sdg4_imputation_diagnostics|stem|dccb9827f554fc6c|840748a72cb21d21|1bba3bacc401b
 sdg4_imputed_long|stem|5478dec415de4141|7ef48df04a41fe5e|73e99af930d2bee5|-187558002||t20454.4012898327s|s26995b|26995|rds|local|vector|||0||
 sdg4_pca_fit|stem|6730f98111135564|5790bb771cbd8096|dd3fd6d38a62ce78|555363298||t20454.4012905967s|s16245b|16245|rds|local|vector|||0.02||
 sdg4_pca_validation|stem|880dc033a2ae3223|9979f58f9a188424|27ee3d883758da7f|-166582506||t20454.4012910573s|s623b|623|rds|local|vector|||0||
-sdg4_index|stem|41c002e1310fb01b|1bde38ba66b8bd92|ceef758909117401|-1455766586||t20454.4012915314s|s2846b|2846|rds|local|vector|||0||
 sdg4_correlation_analysis|stem|fae7a7487b989b2e|e4470a77dd84699f|364d05a9d4a4c9c0|-895098119||t20454.4162071239s|s406b|406|rds|local|vector|||0.01||
 sdg3_imputation_fit|stem|be1e408700037ed7|5b87fd1cffb9709d|7e27b7d769890c91|-2147284122||t20454.4162605376s|s19425b|19425|rds|local|vector|||4.51|Number of logged events: 1|
 sdg3_correlation_analysis|stem|0b3ab1be640f9d53|f201c3f63cd30880|03e07035fe4ce152|1365641999||t20454.4162618403s|s349b|349|rds|local|vector|||0.02||
@@ -114,6 +113,10 @@ sdg3_imputed_primary|stem|16deaae1059819ee|8f77f81d08b7b3b7|4e226506847e4a4f|-12
 sdg3_imputed_long|stem|c1f707f0ee9516b1|321492e92226b650|4e226506847e4a4f|-9376505||t20454.4162634535s|s8115b|8115|rds|local|vector|||0||
 sdg3_imputation_diagnostics|stem|d51a0e138758a020|2d6d2dccc786ab9e|40a73030e02e8a8c|-410234883||t20454.416265786s|s134476b|134476|rds|local|vector|||0.13||
 sdg3_pca_fit|stem|4dd3f2980f6170d3|1548386d6d91e8a2|ca0207df60bc9109|-224005260||t20454.4162663149s|s10972b|10972|rds|local|vector|||0||
+sdg3_pca_validation|stem|77711f3a6d64e84b|bd689686e8bba982|aaaa8e877853aa29|1124551750||t20454.4177204069s|s527b|527|rds|local|vector|||0.01||
+analysis_ready_data|stem|ac643a7adbadca91|5f019bca8618aca6|be84a9a4de43092a|-21729974||t20454.4177231984s|s18839b|18839|rds|local|vector|||0||
+data_preparation_report|stem|c6b12f10646aa758|21517ea2f401df33|a83eeea750d62beb|1094163593|data_preparation_report.html*data_preparation_report.qmd|t20454.4881223494s|s2365782b|2365782|file|local|vector|||22.05|package 'quarto' was built under R version 4.5.2|
+sdg3_index|stem|12d1b1cbf285c273|75753e55cc9b8d64|d9fb5332060ed958|-1844088143||t20457.3520247056s|s2857b|2857|rds|local|vector|||0.02||
 fit_sdg3_pca|function|06ebc49639e4b818
 extract_googlesheet_data|function|be4533c0a97d8a2f
 generate_sdg4_imputation_diagnostics|function|f0bed3051c29520c
@@ -124,10 +127,10 @@ analyze_sdg4_correlations|function|99eaeb197e7b7521
 fit_sdg4_pca|function|af7f7300634d5066
 generate_sdg3_imputation_diagnostics|function|9426ef1b7ab9567f
 all_countries|object|095e2099b3c330f1
-extract_sdg3_index|function|0dadc4892fd9f143
+extract_sdg3_index|function|46fc05671fbdbb1b
 fit_sdg4_panel_imputation|function|bffd3c8db5963f88
 tax_variables|object|08999fa0d76266f0
-extract_sdg4_index|function|168420fa6f25e0b2
+extract_sdg4_index|function|fb98b74500cd1c3d
 mod_variables|object|a06eb29d6b48a53b
 fit_sdg3_panel_imputation|function|0fe05fffc7df23c3
 validate_pca_suitability|function|a76ab239901a579a
@@ -139,7 +142,4 @@ sdg_3_health|object|1619c222eec3dfaf
 integrate_panel_data|function|184785934c6e12ae
 tidy_googlesheet_extract|function|466ef15a8eb63205
 validate_sdg4_pca_suitability|function|6cbeb76b9ebeee84
-sdg3_pca_validation|stem|77711f3a6d64e84b|bd689686e8bba982|aaaa8e877853aa29|1124551750||t20454.4177204069s|s527b|527|rds|local|vector|||0.01||
-sdg3_index|stem|a219c705d9483e7e|75753e55cc9b8d64|1569fb45755bf3aa|-1844088143||t20454.4177220247s|s2844b|2844|rds|local|vector|||0.01||
-analysis_ready_data|stem|ac643a7adbadca91|5f019bca8618aca6|be84a9a4de43092a|-21729974||t20454.4177231984s|s18839b|18839|rds|local|vector|||0||
-data_preparation_report|stem|fee74c4bec49c533|6da6cbac1a737597|bd3a1ad21e202095|1094163593|data_preparation_report.html*data_preparation_report.qmd|t20454.4178999336s|s1962589b|1962589|file|local|vector|||15.41|package 'quarto' was built under R version 4.5.2|
+sdg4_index|stem|8a5b07e06d411c83|1bde38ba66b8bd92|a9c103f15f3f86c5|-1455766586||t20457.3522035677s|s2858b|2858|rds|local|vector|||0.02||

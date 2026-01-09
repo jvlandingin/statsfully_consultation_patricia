@@ -239,7 +239,8 @@ extract_sdg3_index <- function(pca_fit) {
   # Combine with identifiers
   pca_fit$data |>
     dplyr::mutate(sdg3_index = sdg3_index_values) |>
-    dplyr::select(country, year, sdg3_index)
+    dplyr::select(country, year, sdg3_index) |>
+    tibble::as_tibble()
 }
 
 #' Validate PCA suitability using statistical tests
@@ -647,7 +648,8 @@ extract_sdg4_index <- function(pca_fit) {
   # Combine with identifiers
   pca_fit$data |>
     dplyr::mutate(sdg4_index = sdg4_index_values) |>
-    dplyr::select(country, year, sdg4_index)
+    dplyr::select(country, year, sdg4_index) |>
+    tibble::as_tibble()
 }
 
 # ==============================================================================

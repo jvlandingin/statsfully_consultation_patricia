@@ -2,3 +2,7 @@
   quarto-pub:
     - id: 18f8c4e0-fdd9-49c3-b31c-e427c786730f
       url: https://jvland.quarto.pub/data-missingness-report
+- source: data_preparation_report.qmd
+  quarto-pub:
+    - id: 1f050a3a-1f9e-44fe-8fa7-444ad8d18200
+      url: https://jvland.quarto.pub/data-preparation-report
