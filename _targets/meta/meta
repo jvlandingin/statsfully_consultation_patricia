@@ -49,56 +49,34 @@ missing_per_year|stem|aa1a078cc4994e41|875240a82fcfc40b|a8601cf7664480f5|-967179
 .Random.seed|object|1f7d53c34a068e15
 create_sdg3_index|function|e4413105c8966c61
 analysis_data_url|stem|7feea0016235e216|b37365f66ecfa50f|2c530c1562a7fbd1|58263902||t20454.2495778422s|s164b|164|rds|local|vector|||1.81|package 'googlesheets4' was built under R version 4.5.2. package 'dplyr' was built under R version 4.5.2. package 'tidyr' was built under R version 4.5.2. package 'pointblank' was built under R version 4.5.2. package 'mice' was built under R version 4.5.2. package 'psych' was built under R version 4.5.2|
-raw_mod_gdp_per_capita|stem|8e9096e4bc0cd28b|46b483ed8b0b8681|0bf2536f70e21439|1969231745||t20454.2496265812s|s2547b|2547|rds|local|vector|||4.09||
-raw_tax_income_and_profits|stem|204c053bc61d9cfa|c2a198974b3bb317|0bf2536f70e21439|598106990||t20454.249642827s|s1300b|1300|rds|local|vector|||1.23||
-raw_sdg3_neonatal_mortality_rate|stem|88db2199d7407c27|bf80de9b2e141fc8|0bf2536f70e21439|781530374||t20454.2496582553s|s1504b|1504|rds|local|vector|||1.22||
-raw_sdg3_under_5_mortality_rate|stem|04994510272f9d7e|d2f8b97beac47740|0bf2536f70e21439|966127475||t20454.2496730856s|s1475b|1475|rds|local|vector|||1.14||
 raw_sdg4_prop_trained_teachers_primary|stem|948b1e2b2daa210b|7142530692a8943e|0bf2536f70e21439|644450682||t20454.2496876783s|s1208b|1208|rds|local|vector|||1.21||
 raw_sdg4_prop_trained_teachers_secondary|stem|de15c5027b7fae06|8a03d3095bb97452|0bf2536f70e21439|-910645840||t20454.2497028046s|s1090b|1090|rds|local|vector|||1.24||
 raw_sdg4_prop_trained_teachers_lower_secondary|stem|dafdba3fc5bda10b|e32d3892201a1cab|0bf2536f70e21439|-1609335602||t20454.2497170677s|s980b|980|rds|local|vector|||1.17||
 raw_sdg4_upper_secondary|stem|fe475faaf6dab5e0|3745645547e92315|0bf2536f70e21439|1723330774||t20454.2497313583s|s979b|979|rds|local|vector|||1.18||
 raw_sdg4_prop_trained_teachers_pre_primary|stem|85bd9c3d19de6b62|41c10f12a78004c4|0bf2536f70e21439|1414287936||t20454.2497466984s|s1122b|1122|rds|local|vector|||1.28||
-raw_tax_general_consumption|stem|694da38c1ef40025|620aa2bbfdef771d|0bf2536f70e21439|800375402||t20454.2497612928s|s1287b|1287|rds|local|vector|||1.18||
-raw_sdg3_maternal_mortality_ratio|stem|d511f80dd1f7737f|63de00348cefcf37|0bf2536f70e21439|-1557503361||t20454.2497765404s|s1588b|1588|rds|local|vector|||1.26||
-raw_mod_debt_to_gpt_ratio|stem|f553874efd36600f|cbbdfb28f8e0a7c2|0bf2536f70e21439|-1713294840||t20454.2497920728s|s1743b|1743|rds|local|vector|||1.28||
-raw_tax_goods_and_services|stem|25730b12377eeab6|defe18174811aeb6|0bf2536f70e21439|-1989645252||t20454.2498063108s|s1325b|1325|rds|local|vector|||1.18||
 raw_sdg3_coverage_of_essential_health_services|stem|8c8006cc587ba59e|f18b36adbfb84339|0bf2536f70e21439|-118453482||t20454.2498207144s|s1075b|1075|rds|local|vector|||1.19||
-raw_sdg4_adult_literacy_rate|stem|049d6e4bdf954c1f|eaf64749c1e7ca36|0bf2536f70e21439|-678643514||t20454.2498346487s|s876b|876|rds|local|vector|||1.14||
 raw_sdg4_prop_students_proficient_math|stem|948e6ae65a783718|c626f86aa733abb3|0bf2536f70e21439|543851353||t20454.2498502326s|s910b|910|rds|local|vector|||1.22||
 raw_sdg4_prop_trained_teachers_upper_secondary|stem|89dab43c655d39da|89b1c208158afeaa|0bf2536f70e21439|744150185||t20454.2498632581s|s931b|931|rds|local|vector|||1.05||
 raw_sdg4_lower_secondary|stem|c0cb4cecf825103b|5ebd969dbf3c1c7d|0bf2536f70e21439|1517777967||t20454.2498771811s|s1431b|1431|rds|local|vector|||1.14||
 raw_sdg3_prop_births_with_skilled_personnel|stem|82f9636edd672182|879a82d0884e09b1|0bf2536f70e21439|185814990||t20454.2498918573s|s973b|973|rds|local|vector|||1.21||
 raw_sdg4_prop_students_proficient_reading|stem|94744a047a49ca32|536931c53a83023a|0bf2536f70e21439|1008932966||t20454.2499059761s|s804b|804|rds|local|vector|||1.14||
 raw_sdg4_prop_primary_secondary|stem|c9cd0f10ea5fb0b9|34e949de217e4ea6|0bf2536f70e21439|920724006||t20454.2499205507s|s841b|841|rds|local|vector|||1.2||
-raw_mod_macroeconomic_population|stem|ebc7d37ee18af98d|c4cad95f1c33ee6b|0bf2536f70e21439|1164880390||t20454.2499364399s|s1674b|1674|rds|local|vector|||1.32||
 raw_sdg4_gender_gap_in_completion|stem|03c868db3cadbca6|4e6fefcd49b8ccd9|0bf2536f70e21439|683780671||t20454.2499504173s|s736b|736|rds|local|vector|||1.16||
-tidy_mod_gdp_per_capita|stem|0d491c96e77721b6|0f2f9a94aebd9b5a|4ce812a92c456401|-1838000652||t20454.2499573262s|s2494b|2494|rds|local|vector|||0.51||
-tidy_tax_income_and_profits|stem|afb223dfcd21552c|a8317b4b5c77bab5|8e92eb8a1e012bcb|-730557096||t20454.2499629888s|s1238b|1238|rds|local|vector|||0.44||
-tidy_sdg3_neonatal_mortality_rate|stem|bc425d447618a5a5|3b5c4a28eff5b953|f48cdcc4133bc5f1|1045820480||t20454.2499687394s|s1443b|1443|rds|local|vector|||0.44||
-tidy_sdg3_under_5_mortality_rate|stem|713bc0acd44ece8a|8ff79f4ecc44bfd8|7223b1af63a685e1|-1308262945||t20454.2499739836s|s1442b|1442|rds|local|vector|||0.39||
 tidy_sdg4_prop_trained_teachers_primary|stem|39a329faed6bc6e4|2ef785a9eca49f12|10ecd3632a5455d0|1883275132||t20454.2499788243s|s1115b|1115|rds|local|vector|||0.37||
 tidy_sdg4_prop_trained_teachers_secondary|stem|3b6e85c743588c69|ccb69c483284e621|9632d5e25345a3c1|-1877645897||t20454.2499841326s|s1037b|1037|rds|local|vector|||0.4||
 tidy_sdg4_prop_trained_teachers_lower_secondary|stem|f298366b1da9c418|a98cd8cdd19724ab|b46069fb2288db20|-1235214361||t20454.2499889496s|s925b|925|rds|local|vector|||0.38||
 tidy_sdg4_upper_secondary|stem|121d0b00aded0694|1c5aee92059edb73|abe4e74be4dfa509|239912100||t20454.249994672s|s935b|935|rds|local|vector|||0.46||
 tidy_sdg4_prop_trained_teachers_pre_primary|stem|bf9addb59d6b9207|173066bb4270e292|1dd983e6ff53dc00|-901494337||t20454.2499999433s|s1046b|1046|rds|local|vector|||0.41||
-tidy_tax_general_consumption|stem|bc0d27cff80ddb0a|d12a7a44d6849e2f|4c7c7d976785f8cc|-742853919||t20454.2500049549s|s1210b|1210|rds|local|vector|||0.38||
-tidy_sdg3_maternal_mortality_ratio|stem|9da0f28d6b589090|e9717c6edd803043|a44724d24e44567d|-1866845766||t20454.2500098883s|s1521b|1521|rds|local|vector|||0.39||
-tidy_mod_debt_to_gpt_ratio|stem|3f2a9105c8d1f6d0|23e26565cdc11d35|8d1d288a84bb6276|-1214312525||t20454.2500148675s|s1689b|1689|rds|local|vector|||0.37||
-tidy_tax_goods_and_services|stem|8cca027c84436f65|364fcea77203face|d12ea6a2262ed385|1265452993||t20454.2500196217s|s1254b|1254|rds|local|vector|||0.37||
 tidy_sdg3_coverage_of_essential_health_services|stem|e724878d6b0a5611|df532150a68f0137|113b4f62791bf0c8|-2321858||t20454.2500243588s|s1101b|1101|rds|local|vector|||0.38||
-tidy_sdg4_adult_literacy_rate|stem|cde5e2871d9ff41f|0b760eaad505cde5|b453d7ae70f775eb|-1147265488||t20454.2500294898s|s833b|833|rds|local|vector|||0.38||
 tidy_sdg4_prop_students_proficient_math|stem|b9e91aae7be0a9ba|8c099ac7dc47d45d|93fb38271e32bab5|1687074268||t20454.2500344808s|s836b|836|rds|local|vector|||0.39|Exceedance of failed test units where values in `sdg4_prop_students_proficient_math` should not have been NULL. The `col_vals_not_null()` validation failed beyond the proportional threshold level (0.8).  failure level (0.87241) >= failure threshold (0.8)|
 tidy_sdg4_prop_trained_teachers_upper_secondary|stem|4b6dc02c61ddfa65|7a832c1b07cbd9be|4eff34f4578499b7|1238584203||t20454.2500395479s|s899b|899|rds|local|vector|||0.39||
 tidy_sdg4_lower_secondary|stem|35fe4105eb96c923|1005ca5587b865dc|6b5b810f8fc6b956|-649229357||t20454.2500444598s|s1361b|1361|rds|local|vector|||0.39||
 tidy_sdg3_prop_births_with_skilled_personnel|stem|566eb5d1d6108181|20eeefe96b31be2f|d419c15616617cc4|-844001764||t20454.2500494975s|s892b|892|rds|local|vector|||0.39||
 tidy_sdg4_prop_students_proficient_reading|stem|3a82aaf0356cf083|435b075cb82d1f2a|3fa98f4d4d34022a|-1537739096||t20454.2500547216s|s742b|742|rds|local|vector|||0.4|Exceedance of failed test units where values in `sdg4_prop_students_proficient_reading` should not have been NULL. The `col_vals_not_null()` validation failed beyond the proportional threshold level (0.8).  failure level (0.92759) >= failure threshold (0.8)|
 tidy_sdg4_prop_primary_secondary|stem|4ee508d152008665|a7f4620efc12ee39|3d8cfe17665a7f5d|37038095||t20454.2500595867s|s807b|807|rds|local|vector|||0.39||
-tidy_mod_macroeconomic_population|stem|5bd447567736b7e7|94cc3340c1e66e1d|6a080786b0a5eb59|416240112||t20454.2500645677s|s1593b|1593|rds|local|vector|||0.38||
 tidy_sdg4_gender_gap_in_completion|stem|bdda31ffe24b3303|6effdb9d53d0de71|91f9099cfbbf8bf2|-1928693041||t20454.2500697311s|s695b|695|rds|local|vector|||0.41|Exceedance of failed test units where values in `sdg4_gender_gap_in_completion` should not have been NULL. The `col_vals_not_null()` validation failed beyond the proportional threshold level (0.8).  failure level (0.87241) >= failure threshold (0.8)|
-tax_structure_and_sdg|stem|325a30493120397d|36d83f5758977a12|deed0f0615b7f7a5|827749160||t20454.2500714351s|s13951b|13951|rds|local|vector|||0.08||
 sdg4_imputed|stem|c5008f5a1f01cdf6|f4bee05f590a5bac|e31ab84b594760ce|-924614017||t20454.2500766054s|s1261b|1261|rds|local|vector|||0.35|Number of logged events: 1|
 impute_sdg4_education|function|7cee3365453d91f5
-sdg4_imputation_fit|stem|57c8706440013f98|7ac2d57c1bf017e6|34aaecd587a9f6de|551667361||t20454.4012825873s|s39868b|39868|rds|local|vector|||7.57|Number of logged events: 1|
 sdg4_imputed_primary|stem|e36689d2918af9e3|be4e751f0fa8216c|73e99af930d2bee5|1579257228||t20454.4012835257s|s6650b|6650|rds|local|vector|||0.02||
 sdg4_imputed_datasets|stem|1839a09fc4727e2e|51870d718eb44426|73e99af930d2bee5|1175639887||t20454.4012849143s|s26479b|26479|rds|local|vector|||0.03||
 sdg4_imputation_diagnostics|stem|dccb9827f554fc6c|840748a72cb21d21|1bba3bacc401b24d|-1991320501||t20454.401289284s|s513571b|513571|rds|local|vector|||0.25||
@@ -106,7 +84,6 @@ sdg4_imputed_long|stem|5478dec415de4141|7ef48df04a41fe5e|73e99af930d2bee5|-18755
 sdg4_pca_fit|stem|6730f98111135564|5790bb771cbd8096|dd3fd6d38a62ce78|555363298||t20454.4012905967s|s16245b|16245|rds|local|vector|||0.02||
 sdg4_pca_validation|stem|880dc033a2ae3223|9979f58f9a188424|27ee3d883758da7f|-166582506||t20454.4012910573s|s623b|623|rds|local|vector|||0||
 sdg4_correlation_analysis|stem|fae7a7487b989b2e|e4470a77dd84699f|364d05a9d4a4c9c0|-895098119||t20454.4162071239s|s406b|406|rds|local|vector|||0.01||
-sdg3_imputation_fit|stem|be1e408700037ed7|5b87fd1cffb9709d|7e27b7d769890c91|-2147284122||t20454.4162605376s|s19425b|19425|rds|local|vector|||4.51|Number of logged events: 1|
 sdg3_correlation_analysis|stem|0b3ab1be640f9d53|f201c3f63cd30880|03e07035fe4ce152|1365641999||t20454.4162618403s|s349b|349|rds|local|vector|||0.02||
 sdg3_imputed_datasets|stem|65f4249581902148|80490de70cc275fa|4e226506847e4a4f|621936989||t20454.4162623468s|s7472b|7472|rds|local|vector|||0||
 sdg3_imputed_primary|stem|16deaae1059819ee|8f77f81d08b7b3b7|4e226506847e4a4f|-1273904047||t20454.4162629175s|s3772b|3772|rds|local|vector|||0.01||
@@ -117,12 +94,48 @@ sdg3_pca_validation|stem|77711f3a6d64e84b|bd689686e8bba982|aaaa8e877853aa29|1124
 analysis_ready_data|stem|ac643a7adbadca91|5f019bca8618aca6|be84a9a4de43092a|-21729974||t20454.4177231984s|s18839b|18839|rds|local|vector|||0||
 data_preparation_report|stem|c6b12f10646aa758|21517ea2f401df33|a83eeea750d62beb|1094163593|data_preparation_report.html*data_preparation_report.qmd|t20454.4881223494s|s2365782b|2365782|file|local|vector|||22.05|package 'quarto' was built under R version 4.5.2|
 sdg3_index|stem|12d1b1cbf285c273|75753e55cc9b8d64|d9fb5332060ed958|-1844088143||t20457.3520247056s|s2857b|2857|rds|local|vector|||0.02||
+sdg4_index|stem|8a5b07e06d411c83|1bde38ba66b8bd92|a9c103f15f3f86c5|-1455766586||t20457.3522035677s|s2858b|2858|rds|local|vector|||0.02||
+raw_mod_debt_to_gpt_ratio|stem|48ab59fdfe1d8a5c|62a4372c76a4fb7c|13a49ddf1588fe3e|-1713294840||t20475.1287699953s|s1690b|1690|rds|local|vector|||1.94||
+raw_sdg4_lower_secondary_completion_rate|stem|522846c93c29091d|1494765a4d3aafd6|13a49ddf1588fe3e|-324454059||t20475.1415619887s|s1402b|1402|rds|local|vector|||1.81||
+raw_sdg4_out_of_school_rate|stem|a4c9501baf11ebd8|f7ddba453c29d266|13a49ddf1588fe3e|387243603||t20475.1415761965s|s1445b|1445|rds|local|vector|||1.09||
+raw_tax_general_consumption|stem|c4e42a97ce5eea64|18fa231208aefbc1|13a49ddf1588fe3e|800375402||t20475.1415905291s|s1458b|1458|rds|local|vector|||1.12||
+raw_sdg3_maternal_mortality_ratio|stem|512ec28ae84f052a|46c52f5b02d1df35|13a49ddf1588fe3e|-1557503361||t20475.1416044201s|s1542b|1542|rds|local|vector|||1.09||
+raw_sdg4_adult_literacy_rate|stem|31df146f9ec002f9|c1c243d8199a18ee|13a49ddf1588fe3e|-678643514||t20475.1416196469s|s1383b|1383|rds|local|vector|||1.25||
+raw_tax_income_and_profits|stem|9d3365f3e74118f2|a02ea2ecc40a49d3|13a49ddf1588fe3e|598106990||t20475.141632046s|s1258b|1258|rds|local|vector|||0.97||
+raw_sdg4_adjusted_net_enrollment_rate|stem|0e0f331b8209d0b3|44ba2286a1ae8e11|13a49ddf1588fe3e|2122767344||t20475.1416440851s|s1473b|1473|rds|local|vector|||0.99||
+raw_sdg3_under_5_mortality_rate|stem|4df3311c8dc57f22|6fbf276955671412|13a49ddf1588fe3e|966127475||t20475.1416569482s|s1433b|1433|rds|local|vector|||1.05||
+raw_mod_macroeconomic_population|stem|27d2a13840dbbd59|76f9110ce2ae408d|13a49ddf1588fe3e|1164880390||t20475.1416822377s|s1626b|1626|rds|local|vector|||1.2||
+raw_sdg4_n_years_free_education|stem|f88435d1a2dcbea3|0ed40ab3fcae9fa2|13a49ddf1588fe3e|-572016397||t20475.1416956051s|s607b|607|rds|local|vector|||1.11||
+raw_sdg3_neonatal_mortality_rate|stem|6ecc52c6b32ced0e|3b4b63f4f27d1bda|13a49ddf1588fe3e|781530374||t20475.1417092057s|s1457b|1457|rds|local|vector|||1.14||
+raw_sdg3_death_rate_disease_30_to_70|stem|eb313f9f6bc30c75|5b43fb5ff373978b|13a49ddf1588fe3e|153577414||t20475.1417222768s|s1117b|1117|rds|local|vector|||1.08||
+raw_sdg3_surviving_infants_vaccinated|stem|08c7c66797f7308b|1c498ea5de8f19d7|13a49ddf1588fe3e|-1701116567||t20475.1417349752s|s943b|943|rds|local|vector|||1.03||
+raw_mod_gdp_per_capita|stem|9d43c3e2bb538d8f|3fce8c9ed4f8b75f|13a49ddf1588fe3e|1969231745||t20475.141745984s|s2496b|2496|rds|local|vector|||0.9||
+tidy_sdg4_lower_secondary_completion_rate|stem|51fdcfa9fbc82bdd|8d9a988d250737b8|8cfbdcc08d9d032b|-1519009872||t20475.1424219069s|s1374b|1374|rds|local|vector|||0.81|The `x` argument of `as_tibble.matrix()` must have unique column names if `.name_repair` is omitted as of tibble 2.0.0. ℹ Using compatibility `.name_repair`.|
+tidy_sdg4_out_of_school_rate|stem|c703897fe6ef59da|6e3d95ecc97c2f62|bc6b1e33b0677a41|-586892457||t20475.1424308211s|s1378b|1378|rds|local|vector|||0.69||
+tidy_tax_general_consumption|stem|a6b34a8b84bee107|d12a7a44d6849e2f|6b579a2696f54b1a|-742853919||t20475.1424395782s|s1420b|1420|rds|local|vector|||0.69||
+tidy_sdg3_maternal_mortality_ratio|stem|9da0f28d6b589090|e9717c6edd803043|c82395c9d4b0d7f0|-1866845766||t20475.142448292s|s1521b|1521|rds|local|vector|||0.67||
+tidy_sdg4_adult_literacy_rate|stem|57d49b3bbbeedc07|0b760eaad505cde5|7b8d4b8bf41decd4|-1147265488||t20475.142456677s|s1377b|1377|rds|local|vector|||0.69||
+tidy_tax_income_and_profits|stem|d1a9dc53430e9b0e|a8317b4b5c77bab5|82c6d4e7be822ad5|-730557096||t20475.1424651013s|s1233b|1233|rds|local|vector|||0.67||
+tidy_sdg4_adjusted_net_enrollment_rate|stem|0fea815686589d56|975a69bfe6ae9738|dfca63672811a193|-1663581397||t20475.1424737678s|s1427b|1427|rds|local|vector|||0.72||
+tidy_sdg3_under_5_mortality_rate|stem|be897945aaea2b11|8ff79f4ecc44bfd8|926a5b3bbe9b311b|-1308262945||t20475.1424825939s|s1432b|1432|rds|local|vector|||0.7||
+raw_tax_goods_and_services|stem|8099bad2d7973169|fe1ebf0ddd33c5f6|13a49ddf1588fe3e|-1989645252||t20475.1440723776s|s1239b|1239|rds|local|vector|||1.37||
+tidy_tax_goods_and_services|stem|2a82c5b1fb50aff3|364fcea77203face|1b15592282085412|1265452993||t20475.1440826886s|s1217b|1217|rds|local|vector|||0.81|The `x` argument of `as_tibble.matrix()` must have unique column names if `.name_repair` is omitted as of tibble 2.0.0. ℹ Using compatibility `.name_repair`.|
+tidy_mod_macroeconomic_population|stem|307300f5b444ac04|94cc3340c1e66e1d|3cde9cf3e08be9dd|416240112||t20475.1440922394s|s1588b|1588|rds|local|vector|||0.72||
+tidy_sdg4_n_years_free_education|stem|636abd5513c868fc|88085be3e6d2adf4|784c7eecb7c42dc1|-1278668783||t20475.1441022067s|s626b|626|rds|local|vector|||0.81||
+tidy_sdg3_neonatal_mortality_rate|stem|cfe25ac45c43c83f|3b5c4a28eff5b953|a827daa3df2c7b4e|1045820480||t20475.1441107923s|s1439b|1439|rds|local|vector|||0.67||
+tidy_sdg3_death_rate_disease_30_to_70|stem|4901930529b087c3|cfedad9ec03f8e56|c09047f7e5a2ba9b|-274981947||t20475.1441195165s|s1108b|1108|rds|local|vector|||0.7||
+tidy_sdg3_surviving_infants_vaccinated|stem|6e6b6794e3cc47d8|8e9f79418b83e57e|67a34799652aa4bd|-1610286903||t20475.1441279136s|s890b|890|rds|local|vector|||0.68||
+tidy_mod_debt_to_gpt_ratio|stem|55a852df630f7108|23e26565cdc11d35|faddbeb75181dada|-1214312525||t20475.1441366502s|s1686b|1686|rds|local|vector|||0.69||
+tidy_mod_gdp_per_capita|stem|338448a4da3c9832|0f2f9a94aebd9b5a|7fcdd49f56b4a1ff|-1838000652||t20475.1441457156s|s2492b|2492|rds|local|vector|||0.75||
+tax_structure_and_sdg|stem|190bcb5a2992e476|b4096173615d4848|3e565c7a3ad43386|827749160||t20475.1441469876s|s12787b|12787|rds|local|vector|||0.04||
+sdg3_imputation_fit|stem|48b0caaef4807c02|5b87fd1cffb9709d|dd49af2b47b25d6f|-2147284122||t20475.1442049788s|s19468b|19468|rds|local|vector|||4.95|Number of logged events: 1|
+sdg4_imputation_fit|stem|57c8706440013f98|7ac2d57c1bf017e6|fa85affcdd303e55|551667361||t20454.4012825873s||39868|rds|local|vector|||0.1||Can't select columns that don't exist. ✖ Column `sdg4_lower_secondary` doesn't exist.
 fit_sdg3_pca|function|06ebc49639e4b818
-extract_googlesheet_data|function|be4533c0a97d8a2f
+extract_googlesheet_data|function|db7daf793320a8d9
 generate_sdg4_imputation_diagnostics|function|f0bed3051c29520c
 full_join_one_to_one_no_na|function|fb6213e1fdc2d7e3
 extract_sdg4_imputed_data|function|f8226aabf0a639c7
-sdg_4_education|object|cb5dce1a0621f2db
+sdg_4_education|object|334d29b87b3af334
 analyze_sdg4_correlations|function|99eaeb197e7b7521
 fit_sdg4_pca|function|af7f7300634d5066
 generate_sdg3_imputation_diagnostics|function|9426ef1b7ab9567f
@@ -137,9 +150,8 @@ validate_pca_suitability|function|a76ab239901a579a
 analyze_sdg3_correlations|function|93018f9c7284103b
 extract_sdg3_imputed_data|function|55a6490e82a837ae
 calculate_missingness|function|ce53490b5e3ad8e0
-all_variables|object|07383a8346317a07
-sdg_3_health|object|1619c222eec3dfaf
+all_variables|object|7cf8159e62d8ee66
+sdg_3_health|object|4c3db9362f51652e
 integrate_panel_data|function|184785934c6e12ae
-tidy_googlesheet_extract|function|466ef15a8eb63205
+tidy_googlesheet_extract|function|229d96f686b9683e
 validate_sdg4_pca_suitability|function|6cbeb76b9ebeee84
-sdg4_index|stem|8a5b07e06d411c83|1bde38ba66b8bd92|a9c103f15f3f86c5|-1455766586||t20457.3522035677s|s2858b|2858|rds|local|vector|||0.02||

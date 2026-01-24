@@ -36,25 +36,18 @@ sdg_3_health <-
     "sdg3_under_5_mortality_rate",
     "sdg3_neonatal_mortality_rate",
     "sdg3_maternal_mortality_ratio",
-    "sdg3_prop_births_with_skilled_personnel",
-    "sdg3_coverage_of_essential_health_services"
+    "sdg3_death_rate_disease_30_to_70",
+    "sdg3_surviving_infants_vaccinated"
   )
 
 # Education variables for PCA (SDG 4)
 sdg_4_education <-
   c(
-    "sdg4_prop_students_proficient_math",
-    "sdg4_prop_students_proficient_reading",
-    "sdg4_prop_primary_secondary",
-    "sdg4_lower_secondary",
-    "sdg4_upper_secondary",
+    "sdg4_lower_secondary_completion_rate",
+    "sdg4_adjusted_net_enrollment_rate",
+    "sdg4_out_of_school_rate",
     "sdg4_adult_literacy_rate",
-    "sdg4_prop_trained_teachers_pre_primary",
-    "sdg4_prop_trained_teachers_primary",
-    "sdg4_prop_trained_teachers_lower_secondary",
-    "sdg4_prop_trained_teachers_upper_secondary",
-    "sdg4_prop_trained_teachers_secondary",
-    "sdg4_gender_gap_in_completion"
+    "sdg4_n_years_free_education"
   )
 
 # Moderating Variables
@@ -99,39 +92,39 @@ list(
 
   tar_map(
     values = tribble(
-      ~var_name                                    , ~gsheet_range ,
+      ~var_name                              , ~gsheet_range ,
       # Tax variables
-      "tax_goods_and_services"                     , "B3:L33"      ,
-      "tax_general_consumption"                    , "B35:L65"     ,
-      "tax_income_and_profits"                     , "B67:L97"     ,
+      "tax_goods_and_services"               , "B3:L32"      ,
+      "tax_general_consumption"              , "B34:L63"     ,
+      "tax_income_and_profits"               , "B65:L94"     ,
+
       # SDG 3 Health variables
-      "sdg3_under_5_mortality_rate"                , "B101:L131"   ,
-      "sdg3_neonatal_mortality_rate"               , "B133:L163"   ,
-      "sdg3_maternal_mortality_ratio"              , "B165:L195"   ,
-      "sdg3_prop_births_with_skilled_personnel"    , "B197:L227"   ,
-      "sdg3_coverage_of_essential_health_services" , "B229:L259"   ,
+      "sdg3_under_5_mortality_rate"          , "B96:L125"    ,
+      "sdg3_neonatal_mortality_rate"         , "B127:L156"   ,
+      "sdg3_maternal_mortality_ratio"        , "B158:L187"   ,
+      "sdg3_death_rate_disease_30_to_70"     , "B189:L218"   ,
+      "sdg3_surviving_infants_vaccinated"    , "B220:L249"   ,
+
       # SDG 4 Education variables
-      "sdg4_prop_students_proficient_math"         , "B263:L293"   ,
-      "sdg4_prop_students_proficient_reading"      , "B295:L325"   ,
-      "sdg4_prop_primary_secondary"                , "B327:L357"   ,
-      "sdg4_lower_secondary"                       , "B359:L389"   ,
-      "sdg4_upper_secondary"                       , "B391:L421"   ,
-      "sdg4_adult_literacy_rate"                   , "B424:L454"   ,
-      "sdg4_prop_trained_teachers_pre_primary"     , "B456:L486"   ,
-      "sdg4_prop_trained_teachers_primary"         , "B488:L518"   ,
-      "sdg4_prop_trained_teachers_lower_secondary" , "B520:L550"   ,
-      "sdg4_prop_trained_teachers_upper_secondary" , "B552:L582"   ,
-      "sdg4_prop_trained_teachers_secondary"       , "B584:L614"   ,
-      "sdg4_gender_gap_in_completion"              , "B616:L646"   ,
+      "sdg4_lower_secondary_completion_rate" , "B251:L280"   ,
+      "sdg4_adjusted_net_enrollment_rate"    , "B282:L311"   ,
+      "sdg4_out_of_school_rate"              , "B313:L342"   ,
+      "sdg4_adult_literacy_rate"             , "B344:L373"   ,
+      "sdg4_n_years_free_education"          , "B375:L404"   ,
+
       # Moderating variables
-      "mod_gdp_per_capita"                         , "B651:L681"   ,
-      "mod_macroeconomic_population"               , "B683:L713"   ,
-      "mod_debt_to_gpt_ratio"                      , "B715:L745"
+      "mod_gdp_per_capita"                   , "B406:L435"   ,
+      "mod_macroeconomic_population"         , "B437:L466"   ,
+      "mod_debt_to_gpt_ratio"                , "B468:L497"
     ),
     names = var_name,
     tar_target(
       raw,
-      extract_googlesheet_data(analysis_data_url, gsheet_range)
+      googlesheets4::read_sheet(
+        ss = analysis_data_url,
+        sheet = "CLEANUP DATA",
+        range = gsheet_range
+      )
     )
   ),
 

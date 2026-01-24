@@ -55,9 +55,28 @@ tidy_googlesheet_extract <- function(googlesheet_extract, field_name) {
     filter(`List of Countries (Asia-Pacific Region)` == "Years Covered") |>
     select(-`List of Countries (Asia-Pacific Region)`)
 
+  # if no year_row extracted, create one. assume years 2014 to 2023
+  if (nrow(year_row) == 0) {
+    new_year_row <-
+      tibble(
+        year = 2014:2023
+      ) |>
+      t() |>
+      as_tibble()
+    colnames(new_year_row) <- colnames(year_row)
+
+    year_row <-
+      year_row |>
+      bind_rows(
+        new_year_row
+      )
+  }
+
   initial <-
     googlesheet_extract |>
-    dplyr::filter(`List of Countries (Asia-Pacific Region)` != "Years Covered")
+    dplyr::filter(
+      `List of Countries (Asia-Pacific Region)` != "Years Covered"
+    )
 
   colnames(initial) <- c("country", as.character(year_row))
 
@@ -111,10 +130,10 @@ tidy_googlesheet_extract <- function(googlesheet_extract, field_name) {
 #' @param url The Google Sheets URL
 #' @param range The cell range to extract
 #' @return Raw data frame from Google Sheets
-extract_googlesheet_data <- function(url, range) {
+extract_googlesheet_data <- function(url, range, sheet) {
   googlesheets4::read_sheet(
     ss = url,
-    sheet = "DATA SHEET",
+    sheet = sheet,
     range = range
   )
 }
