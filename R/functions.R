@@ -109,7 +109,7 @@ tidy_googlesheet_extract <- function(googlesheet_extract, field_name) {
     pointblank::col_vals_not_null(columns = c("country", "year")) |>
     pointblank::col_vals_not_null(
       columns = dplyr::all_of(field_name),
-      actions = pointblank::action_levels(warn_at = 0.80)
+      actions = pointblank::action_levels(warn_at = 0.90)
     ) |>
     pointblank::col_vals_make_set(
       columns = "country",

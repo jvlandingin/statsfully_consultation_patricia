@@ -7,8 +7,7 @@ box::use(
   stringr[...],
   purrr[...],
   targets[...],
-  constructive[...],
-  psych[KMO, cortest.bartlett]
+  constructive[...]
 )
 
 tar_load(tax_structure_and_sdg)
@@ -53,29 +52,23 @@ analysis_data |>
 # Study new data ---------------------------------------------------------
 
 tar_load(tax_structure_and_sdg)
-tax_structure_and_sdg |>
-  na.omit()
-tax_structure_and_sdg |>
-  visdat::vis_dat()
-
-# tax_structure_and_sdg |>
-#   write.csv("tax_structure_and_sdg.csv")
 
 all_vars <-
   colnames(tax_structure_and_sdg) |>
   setdiff(c("country", "year"))
 
+all_vars <-
+  all_vars |>
+  stringr::str_subset(pattern = "^sdg")
 
 # Generate multiple samples of different variables selections ------------
 
 valid_combo <- function(x) {
-  sum(grepl("^sdg3_", x)) >= 2 &&
-    sum(grepl("^sdg4_", x)) >= 2 &&
-    sum(grepl("^mod_", x)) >= 2 &&
-    sum(grepl("^tax_", x)) >= 2
+  sum(grepl("^sdg3_", x)) >= 5 &&
+    sum(grepl("^sdg4_", x)) >= 5
 }
 valid_samples <- unlist(
-  lapply(8:length(all_vars), function(n) {
+  lapply(10, function(n) {
     Filter(
       valid_combo,
       combn(all_vars, n, simplify = FALSE)
@@ -83,6 +76,19 @@ valid_samples <- unlist(
   }),
   recursive = FALSE
 )
+
+valid_samples <-
+  purrr::map(
+    .x = 10, # Set number of variables to retains to test
+    .f = function(n) {
+      Filter(
+        valid_combo,
+        combn(all_vars, n, simplify = FALSE)
+      )
+    },
+    .progress = TRUE
+  ) |>
+  unlist(recursive = FALSE)
 
 # distribution of subset sizes
 table(lengths(valid_samples))
@@ -97,7 +103,13 @@ remaining_rows_per_comb <-
     .x = valid_samples,
     .f = function(sample) {
       tax_structure_and_sdg |>
-        select(all_of(sample)) |>
+        select(
+          country,
+          year,
+          all_of(sample),
+          contains("tax_"),
+          contains("mod_")
+        ) |>
         na.omit() |>
         nrow()
     },
@@ -120,7 +132,7 @@ nrow_per_sample |>
   arrange(desc(nrow))
 
 nrow_per_sample |>
-  filter(nrow >= 143, cols_retained == 9) |>
+  filter(nrow >= 143) |>
   pull(sample)
 
 nrow_per_sample |>
@@ -150,13 +162,10 @@ nrow_per_sample |>
 
 # Attempt interpolation --------------------------------------------------
 
-tax_structure_and_sdg
-
-
-one_country <-
-  tax_structure_and_sdg |>
-  select(country, year, tax_income_and_profits) |>
-  filter(country == "Azerbaijan")
+tax_structure_and_sdg_interpolated |>
+  select(country, year, matches("^tax_"), matches("^mod_")) |>
+  na.omit() |>
+  count(country, sort = TRUE)
 
 tax_structure_and_sdg_interpolated <-
   tax_structure_and_sdg |>
@@ -179,7 +188,13 @@ remaining_rows_per_comb_interp <-
     .x = valid_samples,
     .f = function(sample) {
       tax_structure_and_sdg_interpolated |>
-        select(all_of(sample)) |>
+        select(
+          country,
+          year,
+          all_of(sample),
+          contains("tax_"),
+          contains("mod_")
+        ) |>
         na.omit() |>
         nrow()
     },
@@ -199,49 +214,11 @@ nrow_per_interp_sample <-
   )
 
 
-nrow_per_interp_sample |>
-  arrange(desc(nrow))
+best_sample <-
+  nrow_per_interp_sample |>
+  slice_max(n = 1, order_by = nrow)
 
-nrow_per_interp_sample |>
-  filter(nrow >= 143, cols_retained == 9) |>
-  pull(sample)
-
-nrow_per_interp_sample |>
-  ggplot(aes(
-    x = factor(cols_retained, levels = rev(levels(factor(cols_retained)))),
-    y = rows_ratained_pct,
-    group = factor(cols_retained),
-    fill = factor(cols_retained)
-  )) +
-  scale_y_continuous(labels = scales::percent) +
-  geom_boxplot() +
-  stat_summary(
-    fun = max,
-    geom = "text",
-    aes(label = scales::percent(after_stat(y), accuracy = 0.1)),
-    vjust = -0.5,
-    size = 3
-  ) +
-  xlab("Number of fields to retain") +
-  ylab("% of records retained") +
-  guides(fill = "none") +
-  theme_minimal()
-
-nrow_per_interp_sample |>
-  filter(cols_retained == 16)
-
-# Improvement in missingness count
-
-old_missing_n <-
-  sum(is.na(tax_structure_and_sdg))
-total_n <-
-  sum(!is.na(tax_structure_and_sdg)) + old_missing_n
-
-new_missing_n <-
-  sum(is.na(tax_structure_and_sdg_interpolated))
-new_missing_n / old_missing_n - 1
-old_missing_n + (-0.08561644 * old_missing_n)
-
-old_missing_n / total_n
-
-new_missing_n / total_n
+best_sample |>
+  pull(sample) |>
+  _[[1]] |>
+  unlist()

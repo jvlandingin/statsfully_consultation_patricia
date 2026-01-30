@@ -36,6 +36,8 @@ sdg_3_health <-
     "sdg3_under_5_mortality_rate",
     "sdg3_neonatal_mortality_rate",
     "sdg3_maternal_mortality_ratio",
+    "sdg3_prop_births_with_skilled_person",
+    "sdg3_coverage_essential_health",
     "sdg3_death_rate_disease_30_to_70",
     "sdg3_surviving_infants_vaccinated"
   )
@@ -43,6 +45,16 @@ sdg_3_health <-
 # Education variables for PCA (SDG 4)
 sdg_4_education <-
   c(
+    "sdg4_primary_proficiency_math",
+    "sdg4_primary_proficiency_reading",
+    "sdg4_primary_secondary_percent",
+    "sdg4_upper_secondary_completion_rate",
+    "sdg4_prop_teachers_pre_primary",
+    "sdg4_prop_teachers_primary",
+    "sdg4_prop_teachers_lower_secondary",
+    "sdg4_prop_teachers_upper_secondary",
+    "sdg4_prop_teachers_secondary",
+    "sdg4_gender_gap_completion",
     "sdg4_lower_secondary_completion_rate",
     "sdg4_adjusted_net_enrollment_rate",
     "sdg4_out_of_school_rate",
@@ -92,37 +104,50 @@ list(
 
   tar_map(
     values = tribble(
-      ~var_name                              , ~gsheet_range ,
+      ~var_name                              , ~gsheet_range , ~gsheet_sheet  ,
       # Tax variables
-      "tax_goods_and_services"               , "B3:L32"      ,
-      "tax_general_consumption"              , "B34:L63"     ,
-      "tax_income_and_profits"               , "B65:L94"     ,
+      "tax_goods_and_services"               , "B3:L32"      , "CLEANUP DATA" ,
+      "tax_general_consumption"              , "B34:L63"     , "CLEANUP DATA" ,
+      "tax_income_and_profits"               , "B65:L94"     , "CLEANUP DATA" ,
 
       # SDG 3 Health variables
-      "sdg3_under_5_mortality_rate"          , "B96:L125"    ,
-      "sdg3_neonatal_mortality_rate"         , "B127:L156"   ,
-      "sdg3_maternal_mortality_ratio"        , "B158:L187"   ,
-      "sdg3_death_rate_disease_30_to_70"     , "B189:L218"   ,
-      "sdg3_surviving_infants_vaccinated"    , "B220:L249"   ,
+      "sdg3_under_5_mortality_rate"          , "B96:L125"    , "CLEANUP DATA" ,
+      "sdg3_neonatal_mortality_rate"         , "B127:L156"   , "CLEANUP DATA" ,
+      "sdg3_maternal_mortality_ratio"        , "B158:L187"   , "CLEANUP DATA" ,
+      "sdg3_prop_births_with_skilled_person" , "B197:L227"   , "DATA"         ,
+      "sdg3_coverage_essential_health"       , "B229:L259"   , "DATA"         ,
+      "sdg3_death_rate_disease_30_to_70"     , "B189:L218"   , "CLEANUP DATA" ,
+      "sdg3_surviving_infants_vaccinated"    , "B220:L249"   , "CLEANUP DATA" ,
+      "sdg3_coverage_essential_health"       , "B229:L259"   , "DATA"         ,
 
       # SDG 4 Education variables
-      "sdg4_lower_secondary_completion_rate" , "B251:L280"   ,
-      "sdg4_adjusted_net_enrollment_rate"    , "B282:L311"   ,
-      "sdg4_out_of_school_rate"              , "B313:L342"   ,
-      "sdg4_adult_literacy_rate"             , "B344:L373"   ,
-      "sdg4_n_years_free_education"          , "B375:L404"   ,
+      "sdg4_primary_proficiency_math"        , "B263:293"    , "DATA"         ,
+      "sdg4_primary_proficiency_reading"     , "B295:325"    , "DATA"         ,
+      "sdg4_primary_secondary_percent"       , "B327:357"    , "DATA"         ,
+      "sdg4_upper_secondary_completion_rate" , "B391:L421"   , "DATA"         ,
+      "sdg4_prop_teachers_pre_primary"       , "B456:L486"   , "DATA"         ,
+      "sdg4_prop_teachers_primary"           , "B488:L518"   , "DATA"         ,
+      "sdg4_prop_teachers_lower_secondary"   , "B520:L550"   , "DATA"         ,
+      "sdg4_prop_teachers_upper_secondary"   , "B552:L582"   , "DATA"         ,
+      "sdg4_prop_teachers_secondary"         , "B584:L614"   , "DATA"         ,
+      "sdg4_gender_gap_completion"           , "B616:L646"   , "DATA"         ,
+      "sdg4_lower_secondary_completion_rate" , "B251:L280"   , "CLEANUP DATA" ,
+      "sdg4_adjusted_net_enrollment_rate"    , "B282:L311"   , "CLEANUP DATA" ,
+      "sdg4_out_of_school_rate"              , "B313:L342"   , "CLEANUP DATA" ,
+      "sdg4_adult_literacy_rate"             , "B344:L373"   , "CLEANUP DATA" ,
+      "sdg4_n_years_free_education"          , "B375:L404"   , "CLEANUP DATA" ,
 
       # Moderating variables
-      "mod_gdp_per_capita"                   , "B406:L435"   ,
-      "mod_macroeconomic_population"         , "B437:L466"   ,
-      "mod_debt_to_gpt_ratio"                , "B468:L497"
+      "mod_gdp_per_capita"                   , "B406:L435"   , "CLEANUP DATA" ,
+      "mod_macroeconomic_population"         , "B437:L466"   , "CLEANUP DATA" ,
+      "mod_debt_to_gpt_ratio"                , "B468:L497"   , "CLEANUP DATA"
     ),
     names = var_name,
     tar_target(
       raw,
       googlesheets4::read_sheet(
         ss = analysis_data_url,
-        sheet = "CLEANUP DATA",
+        sheet = gsheet_sheet,
         range = gsheet_range
       )
     )
