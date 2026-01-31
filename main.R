@@ -49,16 +49,21 @@ analysis_data |>
   vis_dat()
 
 
+# Filter table -----------------------------------------------------------
+
+tax_structure_and_sdg_filtered <-
+  tax_structure_and_sdg |>
+  filter(
+    !country %in% c("Cook Island", "Fiji")
+  )
+
 # Study new data ---------------------------------------------------------
 
 tar_load(tax_structure_and_sdg)
 
+# We will choose among these SDG variables which ones to keep
 all_vars <-
   colnames(tax_structure_and_sdg) |>
-  setdiff(c("country", "year"))
-
-all_vars <-
-  all_vars |>
   stringr::str_subset(pattern = "^sdg")
 
 # Generate multiple samples of different variables selections ------------
@@ -168,8 +173,8 @@ tax_structure_and_sdg_interpolated |>
   count(country, sort = TRUE)
 
 tax_structure_and_sdg_interpolated <-
-  tax_structure_and_sdg |>
-  split(tax_structure_and_sdg$country) |>
+  tax_structure_and_sdg_filtered |>
+  split(tax_structure_and_sdg_filtered$country) |>
   map(
     .f = function(data) {
       data |>
@@ -218,7 +223,96 @@ best_sample <-
   nrow_per_interp_sample |>
   slice_max(n = 1, order_by = nrow)
 
+best_sample
+
 best_sample |>
   pull(sample) |>
   _[[1]] |>
   unlist()
+
+tax_structure_and_sdg_interpolated |>
+  select(country, year, all_of(best_sample$sample[[1]])) |>
+  na.omit() |>
+  count(year)
+
+tax_structure_and_sdg_interpolated |>
+  select(country, year, all_of(best_sample$sample[[1]])) |>
+  naniar::miss_var_summary()
+
+tax_structure_and_sdg_interpolated |>
+  select(country, year, all_of(best_sample$sample[[1]])) |>
+  naniar::miss_summary()
+
+?naniar::miss_var_prop
+?naniar::miss_case_prop
+
+
+# What if we extrapolate only the tax variables --------------------------
+
+tax_structure_and_sdg_interpolated_extrapolated <-
+  tax_structure_and_sdg_filtered |>
+  split(tax_structure_and_sdg_filtered$country) |>
+  map(
+    .f = function(data) {
+      data |>
+        mutate(
+          across(
+            .cols = matches("sdg3_|sdg4_|tax_|mod_"),
+            .fns = ~ zoo::na.approx(., na.rm = FALSE)
+          ),
+          across(
+            .cols = matches("tax_"),
+            .fns = ~ zoo::na.approx(., na.rm = FALSE, rule = 2)
+          )
+        )
+    }
+  ) |>
+  list_rbind()
+
+remaining_rows_per_comb_extrap <-
+  map_dbl(
+    .x = valid_samples,
+    .f = function(sample) {
+      tax_structure_and_sdg_interpolated_extrapolated |>
+        select(
+          country,
+          year,
+          all_of(sample),
+          contains("tax_"),
+          contains("mod_")
+        ) |>
+        na.omit() |>
+        nrow()
+    },
+    .progress = TRUE
+  )
+
+# Analyze
+nrow_per_extrap_sample <-
+  tibble(
+    sample = valid_samples,
+    nrow = remaining_rows_per_comb_extrap,
+    total_rows = 290
+  ) |>
+  mutate(
+    cols_retained = map_dbl(.x = sample, .f = length),
+    rows_ratained_pct = nrow / total_rows
+  )
+
+
+best_sample_extrap <-
+  nrow_per_extrap_sample |>
+  slice_max(n = 1, order_by = nrow)
+
+best_sample_extrap$sample[[1]]
+
+tax_structure_and_sdg_complete <-
+  tax_structure_and_sdg_interpolated_extrapolated |>
+  select(country, year, all_of(best_sample_extrap$sample[[1]])) |>
+  na.omit()
+
+tax_structure_and_sdg_complete |>
+  count(year)
+
+tax_structure_and_sdg_complete |>
+  count(country)
