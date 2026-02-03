@@ -64,7 +64,7 @@ Several SDG4 variables were **excluded** from the imputation model despite being
 |----------|-------------|--------------|
 | `mod_gdp_per_capita` | 0.609 | Strong positive |
 | `mod_macroeconomic_population` | -0.063 | Weak negative |
-| `mod_debt_to_gpt_ratio` | 0.198 | Weak positive |
+| `mod_debt_to_gdp_ratio` | 0.198 | Weak positive |
 | `tax_goods_and_services` | 0.261 | Weak positive |
 | `tax_general_consumption` | 0.248 | Weak positive |
 | `tax_income_and_profits` | 0.136 | Weak positive |

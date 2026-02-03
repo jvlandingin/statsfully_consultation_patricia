@@ -84,7 +84,7 @@ list(
       # Moderating variables
       "mod_gdp_per_capita"                   , "B406:L435"   , "CLEANUP DATA" ,
       "mod_macroeconomic_population"         , "B437:L466"   , "CLEANUP DATA" ,
-      "mod_debt_to_gpt_ratio"                , "B468:L497"   , "CLEANUP DATA"
+      "mod_debt_to_gdp_ratio"                , "B468:L497"   , "CLEANUP DATA"
     ),
     names = var_name,
     tar_target(
@@ -196,8 +196,15 @@ list(
     )
   ),
 
+  # ====================
+  # Other Pre-processing
+  # ====================
   tar_target(
     tax_composition_and_sdg,
     command = classify_tax_predominance(tax_structure_and_sdg_pca)
+  ),
+  tar_target(
+    tax_composition_sdg_idx_scaled_mod,
+    command = scale_mod_variables(tax_composition_and_sdg)
   )
 )

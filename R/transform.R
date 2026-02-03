@@ -692,7 +692,7 @@ create_sdg_indices <-
 classify_tax_predominance <- function(tax_structure_and_sdg_pca) {
   tax_structure_and_sdg_pca |>
     mutate(
-      predominant_tax_composition = case_when(
+      tax_composition = case_when(
         tax_general_consumption - tax_income_and_profits >= 10 ~
           "predominant_consumption_tax",
         tax_income_and_profits - tax_general_consumption >= 10 ~
@@ -700,5 +700,23 @@ classify_tax_predominance <- function(tax_structure_and_sdg_pca) {
         .default = "balanced_tax_mix"
       )
     ) |>
-    select(-matches("^tax_"))
+    select(
+      -tax_general_consumption,
+      -tax_income_and_profits,
+      -tax_goods_and_services
+    )
 }
+
+#' Scale Moderating Variables
+#'
+#' @export
+scale_mod_variables <-
+  function(tax_composition_and_sdg) {
+    tax_composition_and_sdg |>
+      mutate(
+        across(
+          .cols = matches("^mod_"),
+          .fns = scale
+        )
+      )
+  }

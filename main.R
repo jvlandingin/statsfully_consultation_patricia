@@ -1,6 +1,6 @@
-tar_load(tax_structure_and_sdg_pca)
+tar_load(tax_composition_sdg_idx_scaled_mod)
 
-tax_structure_and_sdg_pca
+tax_composition_sdg_idx_scaled_mod
 box::use(
   dplyr[...],
   plm[...],
@@ -8,48 +8,65 @@ box::use(
   car[...]
 )
 
-#' Predominant Income Tax Share
-#' - higher share of income taxes in total tax revenue
-#'
-#' Predominant Consumption Tax Share
-#' - higher share of consumption taxes in total tax revenue
-#'
-#' Balanced Mix of Income and Consumption Tax Share
-#' - balanced mix of income and consumption taxes
-#'
-#' Direct Tax or Income Tax Share
-#' - Income and Profits
-#'
-#' Indirect Tax or Consumption Tax
-#' - Goods and Services
+panel_data <-
+  tax_composition_sdg_idx_scaled_mod
+
+panel_data |>
+  group_by(country) |>
+  summarise(
+    n_categories = n_distinct(tax_composition),
+    categories = paste(unique(tax_composition), collapse = ", ")
+  ) |>
+  print(n = 30)
+panel_data |>
+  group_by(country) |>
+  summarise(across(where(is.numeric), ~ sd(., na.rm = TRUE)))
+
+# Define formula ONCE for consistency
+sdg3_formula <- sdg3_index ~
+  tax_composition +
+  mod_macroeconomic_population +
+  mod_macroeconomic_population:tax_composition +
+  mod_gdp_per_capita +
+  mod_gdp_per_capita:tax_composition +
+  mod_debt_to_gdp_ratio +
+  mod_debt_to_gdp_ratio:tax_composition
 
 ols_sdg3 <-
   lm(
-    sdg3_index ~
-      tax_goods_and_services + tax_general_consumption + tax_income_and_profits,
-    data = tax_structure_and_sdg_pca
+    sdg3_formula,
+    data = panel_data
   )
 summary(ols_sdg3)
 
+
 fixed_sdg3 <-
   plm(
-    sdg3_index ~
-      tax_goods_and_services + tax_general_consumption + tax_income_and_profits,
-    data = tax_structure_and_sdg_pca,
+    sdg3_formula,
+    data = panel_data,
     index = c("country", "year"),
     model = "within"
   )
 summary(fixed_sdg3)
 
-random_sdg3 <-
-  plm(
-    sdg3_index ~
-      tax_goods_and_services + tax_general_consumption + tax_income_and_profits,
-    data = tax_structure_and_sdg_pca,
-    index = c("country", "year"),
-    model = "random"
-  )
+# random_sdg3 <-
+#   plm(
+#     sdg3_formula,
+#     data = panel_data,
+#     index = c("country", "year"),
+#     model = "random"
+#   )
+# summary(random_sdg3)
+
+random_sdg3 <- plm(
+  sdg3_formula,
+  data = panel_data,
+  index = c("country", "year"),
+  model = "random",
+  random.method = "walhus" # or "amemiya", "nerlove"
+)
 summary(random_sdg3)
+
 
 # Hausman Test
 hausman_test_p <-
@@ -63,21 +80,14 @@ if (hausman_test_p$p.value < 0.05) {
 # Wooldridge Test
 pbgtest(chosen_sdg3_mod)
 
+# Breusch-Pagan test
+plmtest(chosen_sdg3_mod, c("time"), type = ("bp"))
 
-# Categorize tax composition ---------------------------------------------
+# Pesaran CD test for cross-sectional dependence in panels
+pcdtest(chosen_sdg3_mod, test = c("cd"))
 
-tar_load(tax_structure_and_sdg_complete)
-tax_structure_and_sdg_complete
+# For those with more than one predictors
+car::vif(chosen_sdg3_mod)
 
-tax_composition_and_sdg <-
-  tax_structure_and_sdg_pca |>
-  mutate(
-    predominant_tax_composition = case_when(
-      tax_general_consumption - tax_income_and_profits >= 10 ~
-        "predominant_consumption_tax",
-      tax_income_and_profits - tax_general_consumption >= 10 ~
-        "predominant_income_tax",
-      .default = "balanced_tax_mix"
-    )
-  ) |>
-  select(-matches("^tax_"))
+# Chow test or F-test
+pFtest(fixed_sdg3, ols_sdg3)

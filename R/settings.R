@@ -35,7 +35,7 @@ mod_variables <-
   c(
     "mod_macroeconomic_population",
     "mod_gdp_per_capita",
-    "mod_debt_to_gpt_ratio"
+    "mod_debt_to_gdp_ratio"
   )
 
 # Tax Variables
