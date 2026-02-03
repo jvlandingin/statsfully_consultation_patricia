@@ -16,6 +16,7 @@ tar_source(
 tar_option_set(
   packages = c(
     "googlesheets4",
+    "purrr",
     "dplyr",
     "tidyr",
     "pointblank",
@@ -137,9 +138,66 @@ list(
   tar_target(
     tax_structure_and_sdg_filtered,
     filter_tax_structure_and_sdg(tax_structure_and_sdg)
-  )
+  ),
+  tar_target(
+    tax_structure_and_sdg_aligned,
+    command = align_variable_direction(tax_structure_and_sdg_filtered)
+  ),
 
-  # ============================================================================
+  # ====================
   # VARIABLE SELECTION
-  # ============================================================================
+  # ====================
+
+  tar_target(
+    tax_structure_and_sdg_interpolated,
+    perform_interpolation(tax_structure_and_sdg_aligned)
+  ),
+  tar_target(
+    valid_combinations,
+    generate_valid_sdg_combinations(tax_structure_and_sdg_interpolated)
+  ),
+  tar_target(
+    remaining_rows_per_sdg_combination,
+    calculate_remaining_rows_per_sdg_combination(
+      tax_structure_and_sdg_interpolated = tax_structure_and_sdg_interpolated,
+      valid_combinations = valid_combinations
+    )
+  ),
+  tar_target(
+    name = pca_quality_per_sdg_combination,
+    command = calculate_pca_quality_per_sdg_combination(
+      tax_structure_and_sdg_interpolated = tax_structure_and_sdg_interpolated,
+      # Only calculate PCA quality for combinations that kept at least 70 rows
+      valid_combinations = remaining_rows_per_sdg_combination %>%
+        filter(nrow >= 70) %>%
+        pull(combination)
+    )
+  ),
+  tar_target(
+    name = best_sdg_combination,
+    command = select_best_sdg_combination(pca_quality_per_sdg_combination)
+  ),
+  tar_target(
+    name = tax_structure_and_sdg_complete,
+    command = perform_variable_selection_and_keep_complete(
+      tax_structure_and_sdg_interpolated = tax_structure_and_sdg_interpolated,
+      best_sdg_combination = best_sdg_combination$combination
+    )
+  ),
+
+  # ====================
+  # PCA
+  # ====================
+  tar_target(
+    tax_structure_and_sdg_pca,
+    command = create_sdg_indices(
+      tax_structure_and_sdg_complete = tax_structure_and_sdg_complete,
+      best_sdg_combination = best_sdg_combination
+    )
+  ),
+
+  tar_target(
+    tax_composition_and_sdg,
+    command = classify_tax_predominance(tax_structure_and_sdg_pca)
+  )
 )
