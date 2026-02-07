@@ -1,0 +1,780 @@
+---
+title: "Tax Structure Composition and SDG Outcomes in Asia-Pacific"
+subtitle: "Panel Data Analysis Report"
+author: "Statistical Consulting by Statsfully"
+date: today
+format:
+  pdf:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    documentclass: article
+    fontsize: 12pt
+    geometry: margin=1in
+    keep-tex: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(dplyr)
+library(knitr)
+library(scales)
+library(gt)
+library(gtsummary)
+
+# All tables and scalars are pre-computed by scripts/modeling.R
+results <- readRDS("outputs/analysis_results.rds")
+panel_data <- results$panel_data
+```
+
+# Introduction
+
+This report presents the panel data analysis examining the relationship between tax structure composition and Sustainable Development Goal (SDG) outcomes in Asia-Pacific economies. The analysis investigates how different tax structures---income-predominant, consumption-predominant, and balanced---relate to health (SDG 3) and education (SDG 4) outcomes, while considering the moderating effects of population, GDP per capita, and debt-to-GDP ratio.
+
+## Research Questions
+
+1. How is tax structure composition related to health and education outcomes?
+2. Do countries with different tax compositions vary in their SDG outcomes?
+3. How do macroeconomic factors moderate the tax structure--SDG relationship?
+
+## Hypotheses
+
+The study tests 14 hypotheses organized into two groups:
+
+### SDG 3: Health Outcomes (H1--H7)
+
+| Hypothesis | Statement |
+|------------|-----------|
+| H1 | Tax structure composition has a significant relationship with health outcomes |
+| H2 | Income-predominant structures are associated with better health outcomes than consumption-predominant structures |
+| H3 | Income-predominant structures are associated with better health outcomes than balanced structures |
+| H4 | Balanced structures are associated with better health outcomes than consumption-predominant structures |
+| H5 | Population significantly moderates the tax structure--health relationship |
+| H6 | GDP per capita significantly moderates the tax structure--health relationship |
+| H7 | Debt-to-GDP ratio significantly moderates the tax structure--health relationship |
+
+### SDG 4: Education Outcomes (H8--H14)
+
+| Hypothesis | Statement |
+|------------|-----------|
+| H8 | Tax structure composition has a significant relationship with education outcomes |
+| H9 | Income-predominant structures are associated with better education outcomes than consumption-predominant structures |
+| H10 | Income-predominant structures are associated with better education outcomes than balanced structures |
+| H11 | Balanced structures are associated with better education outcomes than consumption-predominant structures |
+| H12 | Population significantly moderates the tax structure--education relationship |
+| H13 | GDP per capita significantly moderates the tax structure--education relationship |
+| H14 | Debt-to-GDP ratio significantly moderates the tax structure--education relationship |
+
+------------------------------------------------------------------------
+
+# Methods
+
+## Data and Sample
+
+The analysis uses a panel dataset of Asia-Pacific countries. After data cleaning, interpolation of missing values, and listwise deletion of remaining incomplete cases, the final sample consists of:
+
+```{r}
+#| label: sample-description
+
+tibble(
+  Characteristic = c(
+    "Number of observations",
+    "Number of countries",
+    "Time period",
+    "Panel structure"
+  ),
+  Value = c(
+    nrow(panel_data),
+    n_distinct(panel_data$country),
+    paste(min(panel_data$year), "--", max(panel_data$year)),
+    "Unbalanced"
+  )
+) |>
+  kable()
+```
+
+## Variables
+
+### Dependent Variables
+
+Two composite indices were constructed using Principal Component Analysis (PCA):
+
+- **SDG3 Index**: Composite health outcome index derived from `r length(results$sdg3_vars)` health indicators. Negative-direction indicators (mortality rates) were inverted before PCA so that higher values consistently indicate better health outcomes. The first principal component explains `r round(results$sdg3_pca_summary$pc1_var_pct * 100, 1)`% of total variance.
+
+- **SDG4 Index**: Composite education outcome index derived from `r length(results$sdg4_vars)` education indicators. The out-of-school rate was inverted for directional consistency. The first principal component explains `r round(results$sdg4_pca_summary$pc1_var_pct * 100, 1)`% of total variance.
+
+PCA was performed on standardized (z-scored) variables using pooled country-year observations. The optimal combination of indicators was selected by evaluating all valid combinations against quality criteria: PC1 variance explained exceeding 50%, all pairwise correlations positive, and maximum complete-case retention.
+
+### Independent Variable: Tax Composition
+
+Countries are classified into three tax composition categories based on the relative shares of two OECD Revenue Statistics tax categories:
+
+- **Taxes on income, profits and capital gains** (OECD code 1000)
+- **General taxes on goods and services** (OECD code 5110, primarily VAT/GST)
+
+**Classification Rule** (10 percentage point threshold):
+
+| Category | Rule |
+|----------|------|
+| Income-predominant | Income tax share -- Consumption tax share $\geq$ 10pp |
+| Consumption-predominant | Consumption tax share -- Income tax share $\geq$ 10pp |
+| Balanced | Absolute difference < 10pp |
+
+### Moderating Variables
+
+All moderating variables are standardized (z-scores):
+
+- **Population**: Total population (log-transformed before standardization)
+- **GDP per capita**: Real GDP per capita (USD)
+- **Debt-to-GDP ratio**: General government gross debt as percentage of GDP
+
+## Analytical Approach
+
+### Panel Regression Models
+
+Three specifications are estimated for each SDG outcome:
+
+1. **Pooled OLS**: Ignores panel structure (baseline)
+2. **Fixed Effects (FE)**: Controls for time-invariant country heterogeneity
+3. **Random Effects (RE)**: Assumes country effects are uncorrelated with regressors
+
+The full model specification includes main effects and interaction terms:
+
+$$SDG_{it} = \alpha + \beta_1 TaxComp_{it} + \beta_2 Pop_{it} + \beta_3 GDP_{it} + \beta_4 Debt_{it}$$
+$$+ \beta_5 (TaxComp \times Pop)_{it} + \beta_6 (TaxComp \times GDP)_{it} + \beta_7 (TaxComp \times Debt)_{it} + \epsilon_{it}$$
+
+where $TaxComp$ is a categorical variable with "balanced" as the reference category, producing two dummy variables (income-predominant and consumption-predominant) and six interaction terms.
+
+### Model Selection Tests
+
+| Test | Comparison | Decision Rule |
+|------|------------|---------------|
+| Breusch-Pagan LM | Pooled vs RE | p < 0.05 $\rightarrow$ RE preferred |
+| Chow/F-test | Pooled vs FE | p < 0.05 $\rightarrow$ FE preferred |
+| Hausman | FE vs RE | p < 0.05 $\rightarrow$ FE preferred |
+
+### Robust Inference
+
+Cluster-robust standard errors (HC1, clustered by country) are applied to the chosen model for all hypothesis tests. This accounts for heteroskedasticity and arbitrary within-country correlation, including serial correlation in the error terms. Both standard and robust results are reported for comparison.
+
+### Diagnostic Tests
+
+| Test | Purpose |
+|------|---------|
+| Breusch-Godfrey/Wooldridge | Serial correlation in errors |
+| Pesaran CD | Cross-sectional dependence |
+| Generalized VIF | Multicollinearity |
+
+### Hypothesis Testing
+
+All 14 hypotheses are tested using Wald F-tests with the cluster-robust covariance matrix:
+
+- **Direct effects** (H1/H8): Joint test that both tax composition dummies equal zero
+- **Pairwise comparisons** (H2--H4, H9--H11): Linear contrasts or individual coefficient tests
+- **Moderation effects** (H5--H7, H12--H14): Joint tests on the interaction term pairs for each moderator
+
+### Technical Notes
+
+**Random Effects Estimation**: Due to the near time-invariance of the tax composition variable (only `r panel_data |> group_by(country) |> summarise(n_cat = n_distinct(tax_composition)) |> filter(n_cat > 1) |> nrow()` of `r n_distinct(panel_data$country)` countries change categories during the study period), the standard Swamy-Arora random effects estimator produces a singular matrix. The Wallace-Hussain variance component estimator is used instead, which estimates variance components from pooled OLS residuals.
+
+**Time Effects**: Year fixed effects are not included in the model due to limited degrees of freedom (`r nrow(panel_data)` observations with 11 regressors and `r n_distinct(panel_data$country)` country groups). The study period (2015--2021) includes the COVID-19 pandemic, which may introduce common time-specific shocks not captured by the model.
+
+**Data Interpolation**: Linear interpolation within each country's time series was applied to fill gaps in the raw data before PCA variable selection. This may produce smoother patterns than the underlying data.
+
+------------------------------------------------------------------------
+
+# Descriptive Statistics
+
+## Sample Characteristics
+
+```{r}
+#| label: descriptive-stats
+#| tbl-cap: "Descriptive Statistics of Analysis Variables"
+
+panel_data |>
+  select(
+    `SDG3 Index` = sdg3_index,
+    `SDG4 Index` = sdg4_index,
+    `Population (z)` = mod_macroeconomic_population,
+    `GDP per capita (z)` = mod_gdp_per_capita,
+    `Debt-to-GDP (z)` = mod_debt_to_gdp_ratio
+  ) |>
+  tbl_summary(
+    type = everything() ~ "continuous2",
+    statistic = all_continuous() ~ c(
+      "{mean} ({sd})",
+      "{min}, {max}"
+    ),
+    label = list(
+      `SDG3 Index` ~ "SDG3 Health Index",
+      `SDG4 Index` ~ "SDG4 Education Index",
+      `Population (z)` ~ "Population (standardized)",
+      `GDP per capita (z)` ~ "GDP per capita (standardized)",
+      `Debt-to-GDP (z)` ~ "Debt-to-GDP ratio (standardized)"
+    )
+  ) |>
+  modify_header(label = "**Variable**") |>
+  as_kable()
+```
+
+## Tax Composition Distribution
+
+```{r}
+#| label: tax-distribution
+#| tbl-cap: "Distribution of Tax Composition Categories"
+
+panel_data |>
+  count(tax_composition) |>
+  mutate(
+    Percentage = percent(n / sum(n), accuracy = 0.1),
+    tax_composition = case_when(
+      tax_composition == "balanced_tax_mix" ~ "Balanced",
+      tax_composition == "predominant_consumption_tax" ~ "Consumption-predominant",
+      tax_composition == "predominant_income_tax" ~ "Income-predominant"
+    )
+  ) |>
+  rename(
+    `Tax Composition` = tax_composition,
+    `N` = n
+  ) |>
+  kable()
+```
+
+## Tax Composition Stability by Country
+
+```{r}
+#| label: tax-stability
+#| tbl-cap: "Tax Composition Changes by Country"
+
+panel_data |>
+  group_by(country) |>
+  summarise(
+    `N Years` = n(),
+    `N Categories` = n_distinct(tax_composition),
+    Categories = paste(
+      unique(tax_composition) |>
+        stringr::str_replace_all("_", " ") |>
+        stringr::str_to_title(),
+      collapse = "; "
+    )
+  ) |>
+  rename(Country = country) |>
+  kable()
+```
+
+```{r}
+#| label: tax-stability-note
+
+n_changers <- panel_data |>
+  group_by(country) |>
+  summarise(n_cat = n_distinct(tax_composition)) |>
+  filter(n_cat > 1) |>
+  nrow()
+n_countries <- n_distinct(panel_data$country)
+```
+
+**Note**: Only `r n_changers` of `r n_countries` countries change tax composition categories during the study period. This near time-invariance of the independent variable is a key methodological consideration affecting panel model estimation.
+
+------------------------------------------------------------------------
+
+# Results: SDG3 Health Outcomes
+
+```{r}
+#| label: sdg3-refs
+
+s3 <- results$sdg3$scalars
+s3t <- results$sdg3$tables
+```
+
+## Model Selection
+
+```{r}
+#| label: sdg3-selection
+#| tbl-cap: "Model Selection Tests for SDG3"
+
+s3t$selection |> kable()
+```
+
+`r if (s3$chosen_name == "re") paste0("The Hausman test (p = ", round(s3$hausman_p, 3), ") is not significant at the 0.05 level, indicating that the random effects estimator is consistent. **Random Effects** is the preferred model for SDG3.") else paste0("The Hausman test (p = ", round(s3$hausman_p, 3), ") is significant, indicating systematic differences between the fixed and random effects estimators. **Fixed Effects** is the preferred model for SDG3.")`
+
+`r if (s3$bplm_p < 0.05) paste0("The Breusch-Pagan LM test (p = ", format.pval(s3$bplm_p, digits = 3), ") confirms that panel effects are present, supporting the use of a panel estimator over pooled OLS.") else "The Breusch-Pagan LM test does not reject the null of no panel effects, suggesting that pooled OLS may be adequate."`
+
+## Regression Results
+
+### All Model Specifications (Standard Errors)
+
+```{r}
+#| label: sdg3-regression
+#| tbl-cap: "Panel Regression Results -- SDG3 Health Index (Standard Errors)"
+
+s3t$regression |> kable()
+```
+
+*Note: \*\*\* p < 0.001, \*\* p < 0.01, \* p < 0.05, . p < 0.1. Reference category: Balanced tax mix.*
+
+### Chosen Model with Cluster-Robust Standard Errors
+
+```{r}
+#| label: sdg3-robust
+#| tbl-cap: "SDG3 Chosen Model with Cluster-Robust Standard Errors"
+
+s3t$robust |> kable()
+```
+
+*Note: `r s3$chosen_label` model with HC1 cluster-robust standard errors (clustered by country). \*\*\* p < 0.001, \*\* p < 0.01, \* p < 0.05, . p < 0.1.*
+
+## Model Diagnostics
+
+```{r}
+#| label: sdg3-diagnostics
+#| tbl-cap: "Diagnostic Tests for SDG3 Chosen Model"
+
+s3t$diagnostics |> kable()
+```
+
+`r if (s3$bg_p < 0.05) "The Breusch-Godfrey test detects serial correlation. Cluster-robust standard errors (reported above) account for this issue." else "The Breusch-Godfrey test does not detect serial correlation at the 0.05 level."`
+
+```{r}
+#| label: sdg3-vif
+#| tbl-cap: "Generalized Variance Inflation Factors -- SDG3"
+
+if (!is.null(s3t$vif)) s3t$vif |> kable()
+```
+
+**Note on Multicollinearity**: The tax composition variable shows elevated GVIF values due to its interaction terms. This inflates standard errors (reducing statistical power) but does not bias coefficient estimates.
+
+## Hypothesis Testing Summary (H1--H7)
+
+```{r}
+#| label: sdg3-hypothesis
+#| tbl-cap: "Hypothesis Testing Results -- SDG3 Health Outcomes (Cluster-Robust)"
+
+s3t$hypotheses |>
+ gt() |> 
+  cols_width(
+    Hypothesis ~ pct(10),
+    Statement ~ pct(30),
+    Test ~ pct(25),
+    `F-statistic` ~ pct(7),
+    `p-value` ~ pct(7),
+    Conclusion ~ pct(10),
+  ) %>%
+    tab_options(
+    table.font.size = px(10),
+    table.width = pct(100)
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = everything()
+  ) 
+```
+
+**Key Finding**: Using `r s3$chosen_label` estimation with cluster-robust standard errors, `r if (s3$n_sig == 0) "no hypotheses are statistically significant at the 0.05 level. Tax structure composition does not show a significant relationship with health outcomes in this sample." else paste0(s3$n_sig, " of 7 hypotheses are statistically significant at the 0.05 level.")`
+
+------------------------------------------------------------------------
+
+# Results: SDG4 Education Outcomes
+
+```{r}
+#| label: sdg4-refs
+
+s4 <- results$sdg4$scalars
+s4t <- results$sdg4$tables
+```
+
+## Model Selection
+
+```{r}
+#| label: sdg4-selection
+#| tbl-cap: "Model Selection Tests for SDG4"
+
+s4t$selection |> kable()
+```
+
+`r if (s4$chosen_name == "re") paste0("The Hausman test (p = ", round(s4$hausman_p, 3), ") is not significant at the 0.05 level, indicating that the random effects estimator is consistent. **Random Effects** is the preferred model for SDG4.") else paste0("The Hausman test (p = ", round(s4$hausman_p, 3), ") is significant, indicating systematic differences between the fixed and random effects estimators. **Fixed Effects** is the preferred model for SDG4.")`
+
+`r if (s4$bplm_p < 0.05) paste0("The Breusch-Pagan LM test (p = ", format.pval(s4$bplm_p, digits = 3), ") confirms that panel effects are present.") else "The Breusch-Pagan LM test does not reject the null of no panel effects."`
+
+## Regression Results
+
+### All Model Specifications (Standard Errors)
+
+```{r}
+#| label: sdg4-regression
+#| tbl-cap: "Panel Regression Results -- SDG4 Education Index (Standard Errors)"
+
+s4t$regression |> kable()
+```
+
+*Note: \*\*\* p < 0.001, \*\* p < 0.01, \* p < 0.05, . p < 0.1. Reference category: Balanced tax mix.*
+
+### Chosen Model with Cluster-Robust Standard Errors
+
+```{r}
+#| label: sdg4-robust
+#| tbl-cap: "SDG4 Chosen Model with Cluster-Robust Standard Errors"
+
+s4t$robust |> kable()
+```
+
+*Note: `r s4$chosen_label` model with HC1 cluster-robust standard errors (clustered by country). \*\*\* p < 0.001, \*\* p < 0.01, \* p < 0.05, . p < 0.1.*
+
+## Model Diagnostics
+
+```{r}
+#| label: sdg4-diagnostics
+#| tbl-cap: "Diagnostic Tests for SDG4 Chosen Model"
+
+s4t$diagnostics |> kable()
+```
+
+`r if (s4$bg_p < 0.05) "The Breusch-Godfrey test detects serial correlation in the SDG4 model. Cluster-robust standard errors (reported above) account for this, providing valid inference despite the presence of serial correlation." else "The Breusch-Godfrey test does not detect serial correlation at the 0.05 level."`
+
+```{r}
+#| label: sdg4-vif
+#| tbl-cap: "Generalized Variance Inflation Factors -- SDG4"
+
+if (!is.null(s4t$vif)) s4t$vif |>
+  kable()
+```
+
+## Hypothesis Testing Summary (H8--H14)
+
+```{r}
+#| label: sdg4-hypothesis
+#| tbl-cap: "Hypothesis Testing Results -- SDG4 Education Outcomes (Cluster-Robust)"
+
+s4t$hypotheses |>
+  gt() |> 
+  cols_width(
+    Hypothesis ~ pct(10),
+    Statement ~ pct(30),
+    Test ~ pct(25),
+    `F-statistic` ~ pct(7),
+    `p-value` ~ pct(7),
+    Conclusion ~ pct(10),
+  ) %>%
+    tab_options(
+    table.font.size = px(10),
+    table.width = pct(100)
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = everything()
+  ) 
+```
+
+**Key Finding**: Using `r s4$chosen_label` estimation with cluster-robust standard errors, `r if (s4$n_sig == 0) "no hypotheses are statistically significant at the 0.05 level." else paste0(s4$n_sig, " of 7 hypotheses are statistically significant at the 0.05 level (", paste(s4$sig_labels, collapse = ", "), ").")`
+
+------------------------------------------------------------------------
+
+# Discussion
+
+## Summary of Findings
+
+```{r}
+#| label: discussion-refs
+
+# Use pre-computed hypothesis table conclusions for conditional prose
+s3_hyp <- s3t$hypotheses$Conclusion
+s4_hyp <- s4t$hypotheses$Conclusion
+# H1..H7 map to rows 1..7 in the hypothesis table
+h1_sig <- s3_hyp[1] == "Reject H0"
+h8_sig <- s4_hyp[1] == "Reject H0"
+h3_sig <- s3_hyp[3] == "Reject H0"
+h10_sig <- s4_hyp[3] == "Reject H0"
+# Moderation hypotheses
+h5_sig <- s3_hyp[5] == "Reject H0"
+h6_sig <- s3_hyp[6] == "Reject H0"
+h7_sig <- s3_hyp[7] == "Reject H0"
+h12_sig <- s4_hyp[5] == "Reject H0"
+h13_sig <- s4_hyp[6] == "Reject H0"
+h14_sig <- s4_hyp[7] == "Reject H0"
+
+n_sig_3 <- s3$n_sig
+n_sig_4 <- s4$n_sig
+```
+
+### SDG3 Health Outcomes
+
+`r if (n_sig_3 == 0) "The analysis found **no statistically significant relationships** between tax structure composition and health outcomes after applying cluster-robust standard errors. This null finding persists across all direct effect hypotheses and all three moderation hypotheses (population, GDP per capita, debt-to-GDP ratio)." else paste0("The analysis found **", n_sig_3, " significant relationships** with health outcomes after applying cluster-robust standard errors.")`
+
+`r if (n_sig_3 == 0) "This contrasts with the pooled OLS results, which may show nominal significance. The discrepancy suggests that cross-sectional associations (between-country differences) drive the pooled results rather than within-country changes in tax policy." else ""`
+
+### SDG4 Education Outcomes
+
+`r if (n_sig_4 == 0) "Similarly, no statistically significant relationships were found between tax structure composition and education outcomes." else if (n_sig_4 > 0) paste0("The analysis found **", n_sig_4, " significant hypotheses** for education outcomes (", paste(s4$sig_labels, collapse = ", "), ").") else ""`
+
+### Comparison of Standard and Robust Standard Errors
+
+The use of cluster-robust standard errors is particularly important for the SDG4 model, where serial correlation was detected. Standard errors that ignore within-country correlation may underestimate the true uncertainty of the estimates, leading to inflated significance levels. The cluster-robust results provide more conservative and reliable inference.
+
+## Theoretical Implications
+
+`r if (h1_sig || h8_sig) "The findings provide some support for the fiscal policy literature suggesting that tax structure composition is related to social outcomes." else "The lack of significant findings challenges the assumption that tax structure composition---as measured by a three-category classification---has a detectable effect on SDG outcomes in this sample."`
+
+`r if (any(c(h3_sig, h10_sig))) "Where significant effects are found, they partially support the theoretical expectation that progressive taxation (income-predominant) may be associated with better social outcomes through greater redistributive capacity and more stable revenue for public services." else ""`
+
+`r if (!h1_sig && !h8_sig) "The null findings do not necessarily mean tax structure is irrelevant to SDG outcomes. Rather, the categorical classification (with a 10 percentage point threshold) and the limited within-country variation may lack the statistical power to detect effects that exist in the population." else ""`
+
+## Limitations
+
+### Near Time-Invariance of Tax Composition
+
+Only `r n_changers` of `r n_countries` countries changed their tax composition category during the study period. This fundamentally limits the ability of panel methods to identify **within-country effects**:
+
+- Fixed effects cannot estimate the main effect of tax composition (absorbed by country dummies)
+- Random effects relies heavily on between-country variation
+- Results should be interpreted as **cross-sectional associations**, not causal effects of policy changes
+
+### Wallace-Hussain Estimation
+
+The standard random effects estimator (Swamy-Arora) failed due to matrix singularity caused by the near time-invariance issue. The Wallace-Hussain method was used as an alternative, which estimates variance components from pooled OLS residuals. While valid, this is a less common approach in the literature.
+
+### Sample Size Constraints
+
+With only `r nrow(panel_data)` observations across `r n_countries` countries, the analysis has limited statistical power to detect:
+
+- Interaction effects (6 interaction terms with a 3-level categorical variable)
+- Small-to-medium effect sizes
+- Country-specific heterogeneity in treatment effects
+
+### Multicollinearity
+
+Elevated generalized VIF values for tax composition and its interactions indicate substantial multicollinearity. This inflates standard errors (reducing power) but does not bias coefficient estimates.
+
+### Serial Correlation
+
+`r if (results$sdg4$scalars$bg_p < 0.05) paste0("The Breusch-Godfrey test detected serial correlation in the SDG4 model (p = ", round(results$sdg4$scalars$bg_p, 3), "). Cluster-robust standard errors have been applied to address this, providing valid inference. However, the presence of serial correlation suggests that temporal dynamics (e.g., lagged effects) may be relevant but are not modeled.") else "No serial correlation was detected in either model."`
+
+### Time Effects
+
+Year fixed effects were not included due to limited degrees of freedom. The study period (2015--2021) includes the COVID-19 pandemic (2020--2021), which produced large common shocks to health systems, education delivery, GDP, and government debt across all countries. These time-specific effects are not controlled for.
+
+### PCA on Pooled Observations
+
+The composite SDG indices were constructed using PCA on pooled country-year observations. This approach conflates between-country and within-country variation: the principal components primarily capture cross-country differences in development levels rather than temporal changes within countries. A panel-aware dimensionality reduction approach could provide different results.
+
+### Interpolation Before Variable Selection
+
+Linear interpolation was applied to fill missing values before evaluating PCA variable combinations. Interpolated values are smoother and more correlated than real observations, which may have produced optimistic PCA quality metrics.
+
+### Endogeneity
+
+The analysis cannot establish causality due to:
+
+- Potential reverse causality (better outcomes may enable tax reform)
+- Omitted variable bias (unmeasured confounders)
+- Absence of instrumental variable or quasi-experimental design
+
+## Recommendations for Future Research
+
+1. **Use continuous tax share variables** instead of categorical classification to preserve more within-country variation
+2. **Implement lagged specifications** to address potential reverse causality and temporal dynamics
+3. **Extend the time series** to capture more within-country tax structure changes
+4. **Consider instrumental variable approaches** to address endogeneity
+5. **Include year fixed effects** if a larger sample permits sufficient degrees of freedom
+6. **Apply panel-aware PCA** or country-demeaned PCA for index construction
+
+------------------------------------------------------------------------
+
+# Conclusion
+
+```{r}
+#| label: conclusion-refs
+
+total_sig <- n_sig_3 + n_sig_4
+```
+
+This study examined the relationship between tax structure composition and SDG outcomes in `r n_countries` Asia-Pacific countries from `r min(panel_data$year)` to `r max(panel_data$year)`. Using panel data methods with `r tolower(results$sdg3$scalars$chosen_label)` estimation and cluster-robust standard errors, the analysis found:
+
+1. `r if (n_sig_3 == 0) "**No significant relationship** between tax structure and health outcomes (SDG3)" else paste0("**", n_sig_3, " significant relationship(s)** between tax structure and health outcomes (SDG3)")`
+2. `r if (n_sig_4 == 0) "**No significant relationship** between tax structure and education outcomes (SDG4)" else paste0("**", n_sig_4, " significant relationship(s)** between tax structure and education outcomes (SDG4)")`
+3. `r if (any(c(h5_sig, h6_sig, h7_sig, h12_sig, h13_sig, h14_sig))) "Evidence of **significant moderation effects** by macroeconomic variables on the tax structure--SDG relationship" else "**No significant moderation effects** by macroeconomic variables (population, GDP per capita, debt-to-GDP ratio)"`
+
+`r if (total_sig == 0) "The null findings across all 14 hypotheses suggest that the categorical tax composition classification lacks sufficient within-country variation to identify effects in this panel setting." else ""`
+
+These findings should be interpreted with caution due to the near time-invariance of the tax composition variable, limited sample size, absence of time fixed effects covering the COVID-19 period, and potential endogeneity concerns. The results primarily reflect cross-sectional associations between countries rather than causal effects of tax policy changes within countries.
+
+------------------------------------------------------------------------
+
+\newpage
+
+# Appendix A: Data Preprocessing Pipeline
+
+This appendix documents the data preprocessing steps applied before the analysis.
+
+## Pipeline Overview
+
+| Step | Description |
+|------|-------------|
+| 1 | Convert wide-format data extracts to tidy long format (country, year, value) |
+| 2 | Integrate all indicator datasets via sequential joins with one-to-one relationship enforcement |
+| 3 | Remove countries with excessive missing data (Cook Island, Fiji) |
+| 4 | Invert negative-direction indicators so higher values consistently mean better outcomes |
+| 5 | Apply linear interpolation within each country's time series for missing values |
+| 6 | Generate all valid combinations of 5 SDG3 + 5 SDG4 indicator variables |
+| 7 | Evaluate PCA quality metrics (PC1 variance, loadings, correlations) for each combination |
+| 8 | Select the optimal variable combination based on PCA quality and sample retention |
+| 9 | Extract first principal component scores as composite SDG indices |
+| 10 | Classify each country-year by tax predominance using the 10pp threshold rule |
+| 11 | Standardize moderating variables via z-score transformation |
+
+## Step 1: Data Tidying
+
+Raw data was extracted from Google Sheets in wide format (years as columns) and converted to tidy long format with columns: country, year, and the indicator value. Country name inconsistencies were standardized, and data types and completeness were validated.
+
+## Step 2: Data Integration
+
+All indicator datasets were sequentially joined using country and year as keys. One-to-one relationships were enforced (no duplicate keys), and NA matching was disabled to prevent spurious joins.
+
+## Step 3: Country Filtering
+
+Cook Island and Fiji were removed due to excessive missing data across indicators.
+
+## Step 4: Variable Direction Alignment
+
+To ensure all SDG variables have consistent direction (higher = better outcomes), the following indicators were multiplied by -1:
+
+**SDG3 inversions**: Under-5 mortality rate, neonatal mortality rate, maternal mortality ratio, death rate from diseases (ages 30--70)
+
+**SDG4 inversions**: Out-of-school rate
+
+## Step 5: Linear Interpolation
+
+Linear interpolation was applied within each country's time series to fill gaps. This preserves country boundaries (no cross-country interpolation) and was applied to SDG, tax, and moderating variables.
+
+## Step 6--8: PCA Variable Selection
+
+All valid combinations of SDG variables (5 SDG3 + 5 SDG4) were evaluated for PCA suitability:
+
+**Quality criteria**:
+
+- PC1 must explain > 50% of variance
+- All pairwise correlations must be positive (after direction alignment)
+- Minimum absolute loading on PC1 assessed
+- Average inter-item correlation assessed
+
+**Selection priority**: (1) Both SDG3 and SDG4 pass quality criteria, (2) Maximize mean PC1 variance explained, (3) Maximize complete case count.
+
+## Step 9: SDG Index Construction
+
+The first principal component (PC1) scores from the selected variable combination serve as the composite indices. PCA was performed on standardized (z-scored) variables.
+
+## Step 10: Tax Classification
+
+Each country-year was classified by tax structure using OECD Revenue Statistics categories:
+
+- **Code 1000**: Taxes on income, profits and capital gains
+- **Code 5110**: General taxes on goods and services (VAT/GST)
+
+| Category | Condition |
+|----------|-----------|
+| Consumption-predominant | 5110 -- 1000 $\geq$ 10pp |
+| Income-predominant | 1000 -- 5110 $\geq$ 10pp |
+| Balanced | Absolute difference < 10pp |
+
+## Step 11: Moderator Scaling
+
+Moderating variables were standardized via z-score transformation: $z = (x - \bar{x}) / s$.
+
+## Final Dataset
+
+| Column | Type | Description |
+|--------|------|-------------|
+| Country | Character | Country name |
+| Year | Numeric | Year of observation |
+| Tax Composition | Factor | Tax classification (3 levels) |
+| Population (z) | Numeric | Standardized population |
+| GDP per capita (z) | Numeric | Standardized GDP per capita |
+| Debt-to-GDP (z) | Numeric | Standardized debt-to-GDP ratio |
+| SDG3 Index | Numeric | Health composite index (PC1) |
+| SDG4 Index | Numeric | Education composite index (PC1) |
+
+Final sample: `r nrow(panel_data)` observations (`r n_countries` countries, `r min(panel_data$year)`--`r max(panel_data$year)`)
+
+------------------------------------------------------------------------
+
+\newpage
+
+# Appendix B: PCA Summary
+
+## SDG3 Health Index
+
+```{r}
+#| label: pca-sdg3
+#| tbl-cap: "PCA Summary -- SDG3 Health Index"
+
+# sdg3_summary <- summary(results$sdg3_pca)
+sdg3_summary <- results$sdg3_pca
+
+tibble(
+  Component = paste0("PC", 1:ncol(sdg3_summary$importance)),
+  `Std. Deviation` = round(sdg3_summary$importance["Standard deviation", ], 3),
+  `Variance Explained` = percent(
+    sdg3_summary$importance["Proportion of Variance", ], accuracy = 0.1
+  ),
+  `Cumulative Variance` = percent(
+    sdg3_summary$importance["Cumulative Proportion", ], accuracy = 0.1
+  )
+) |>
+  kable()
+```
+
+```{r}
+#| label: pca-sdg3-loadings
+#| tbl-cap: "PC1 Loadings -- SDG3 Health Index"
+
+loadings3 <- results$sdg3_pca$loadings_pc1
+tibble(
+  Variable = names(loadings3) |>
+    stringr::str_remove("^sdg3_") |>
+    stringr::str_replace_all("_", " ") |>
+    stringr::str_to_title(),
+  `PC1 Loading` = round(loadings3, 3)
+) |>
+  kable()
+```
+
+## SDG4 Education Index
+
+```{r}
+#| label: pca-sdg4
+#| tbl-cap: "PCA Summary -- SDG4 Education Index"
+
+# sdg4_summary <- summary(results$sdg4_pca)
+sdg4_summary <- results$sdg4_pca
+
+tibble(
+  Component = paste0("PC", 1:ncol(sdg4_summary$importance)),
+  `Std. Deviation` = round(sdg4_summary$importance["Standard deviation", ], 3),
+  `Variance Explained` = percent(
+    sdg4_summary$importance["Proportion of Variance", ], accuracy = 0.1
+  ),
+  `Cumulative Variance` = percent(
+    sdg4_summary$importance["Cumulative Proportion", ], accuracy = 0.1
+  )
+) |>
+  kable()
+```
+
+```{r}
+#| label: pca-sdg4-loadings
+#| tbl-cap: "PC1 Loadings -- SDG4 Education Index"
+
+loadings4 <- results$sdg4_pca$loadings_pc1
+tibble(
+  Variable = names(loadings4) |>
+    stringr::str_remove("^sdg4_") |>
+    stringr::str_replace_all("_", " ") |>
+    stringr::str_to_title(),
+  `PC1 Loading` = round(loadings4, 3)
+) |>
+  kable()
+```
