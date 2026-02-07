@@ -499,11 +499,19 @@ calculate_pca_quality_per_sdg_combination <-
           na.omit()
 
         n_rows <- nrow(data_subset)
+        n_countries <- n_distinct(data_subset$country)
+        n_years <- n_distinct(data_subset$year)
+        min_year <- min(data_subset$year)
+        max_year <- max(data_subset$year)
 
         # Need minimum observations for meaningful PCA
         if (n_rows < 30) {
           return(tibble(
             nrow = n_rows,
+            n_countries = n_countries,
+            n_years = n_years,
+            min_year = min_year,
+            max_year = max_year,
             # SDG3 metrics
             sdg3_cor_matrix = list(NULL),
             sdg3_pca_result = list(NULL),
@@ -535,6 +543,10 @@ calculate_pca_quality_per_sdg_combination <-
 
         tibble(
           nrow = n_rows,
+          n_countries = n_countries,
+          n_years = n_years,
+          min_year = min_year,
+          max_year = max_year,
           # SDG3 metrics
           sdg3_cor_matrix = list(sdg3_metrics$cor_matrix),
           sdg3_pca_result = list(sdg3_metrics$pca_result),

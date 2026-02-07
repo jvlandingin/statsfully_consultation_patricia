@@ -11,16 +11,10 @@ box::use(
 panel_data <-
   tax_composition_sdg_idx_scaled_mod
 
+# Descriptive
 panel_data |>
-  group_by(country) |>
-  summarise(
-    n_categories = n_distinct(tax_composition),
-    categories = paste(unique(tax_composition), collapse = ", ")
-  ) |>
-  print(n = 30)
-panel_data |>
-  group_by(country) |>
-  summarise(across(where(is.numeric), ~ sd(., na.rm = TRUE)))
+  count(country) |>
+  rename(count_of_years = n)
 
 # Define formula ONCE for consistency
 sdg3_formula <- sdg3_index ~
@@ -91,3 +85,35 @@ car::vif(chosen_sdg3_mod)
 
 # Chow test or F-test
 pFtest(fixed_sdg3, ols_sdg3)
+
+
+# check data combinatinos ------------------------------------------------
+
+tar_load(pca_quality_per_sdg_combination)
+
+glimpse(pca_quality_per_sdg_combination)
+
+pca_quality_per_sdg_combination |>
+  arrange(desc(n_countries))
+
+pca_quality_per_sdg_combination |>
+  arrange(desc(n_years))
+
+pca_quality_per_sdg_combination_simple <-
+  pca_quality_per_sdg_combination |>
+  filter(
+    sdg3_all_cors_positive,
+    sdg4_all_cors_positive
+  ) |>
+  select(
+    nrow,
+    n_countries,
+    n_years,
+    min_year,
+    max_year,
+    sdg3_pc1_var_explained,
+    sdg4_pc1_var_explained
+  )
+
+pca_quality_per_sdg_combination_simple |>
+  arrange(desc(n_years))
